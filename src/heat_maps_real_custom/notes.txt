@@ -1,0 +1,28 @@
+All cells had custom heat maps edited. Specific edit details are not recorded to save time.
+Any field touching a border was removed unless the border contact was very minimal.
+
+Nonfld_filt_perc is the starting point for filtering non-field firing in the plots and is a parameter in the matlab software. Cells started with "nonfld_filt_perc=.26;" unless otherwise noted.
+n1: 3 fields at bottom of plot were separated with manual editing. Center field was slightly enlarged.
+n2 nonfld_filt_perc=.6;
+n3 nonfld_filt_perc=.28;
+n4 nonfld_filt_perc=.26;
+n5 nonfld_filt_perc=.26;
+n6 nonfld_filt_perc=?
+n8 nonfld_filt_perc=?
+n10 nonfld_filt_perc=.35; unclear that any fields were beyond borders enough but kept 2 fields included for now.
+n11 nonfld_filt_perc=.2;
+n12 nonfld_filt_perc=.2;
+n13 nonfld_filt_perc=.23;
+n14 nonfld_filt_perc=.14;
+n15 nonfld_filt_perc=.2;
+n16 nonfld_filt_perc=.2;
+n17 nonfld_filt_perc=.2;
+n18 nonfld_filt_perc=?
+n19 nonfld_filt_perc=.2;
+n20-n23 nonfld_filt_perc=.2;
+n24 nonfld_filt_perc=.18;
+n25 nonfld_filt_perc=.26;
+n26 nonfld_filt_perc=.2;
+n27 nonfld_filt_perc=.2;
+n28 nonfld_filt_perc=.2;
+n29 nonfld_filt_perc=.1

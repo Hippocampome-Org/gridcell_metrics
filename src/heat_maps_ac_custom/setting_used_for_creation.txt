@@ -1,0 +1,52 @@
+Notes:
+
+All cells had fields other than the central 7 edited out. NS found that for the largest field autocorr. plots (e.g., n10, n11) only 7 fields really appeared pretty well so for consistency using 7 fields for every plot could make sense.
+
+n3 was edited to added 2 fields that were missing
+n4 had fields cropped in it to fit with original plot
+n6 had fields cropped in it to fit with original plot
+n7 was skipped for analysis due to having a grid score below 0.19
+n8 I thought perhaps the fields should be trimmed but left them the way they are to try to limit editing. I think the autocorr. maybe widened the fields to an extent.
+n9 was skipped for analysis due to having a grid score below 0.19
+n12 had 2 fields expanded to fit with original plot
+n15 had 2 fields expanded to fit with original plot
+n17 had a judgment call of cropping 2 fields at their edges to separate from other fields
+n21 had 5 fields expanded to fit with original plot
+n28 a judgment call was made to not edit this to minimize overall edits and
+because it seem to fit the original plot well enough
+n29 a judgment call was made to not edit this to minimize overall edits and
+because it seem to fit the original plot well enough
+
+Software settings for all cells n1-n29:
+
+%%%%%%% parameter options %%%%%%%
+heat_map_selection=2;%23;%medium;
+% thresholds
+if heat_map_selection==small
+    dist_thresh=20; % max field distance
+    fld_sz_thresh=6; % min field neurons at border
+    nonfld_filt_perc=0.26; % low firing filter out
+elseif heat_map_selection==medium
+    dist_thresh=20;
+    fld_sz_thresh=6;
+    nonfld_filt_perc=0.26;
+elseif heat_map_selection==large
+    dist_thresh=50;
+    fld_sz_thresh=10;
+    nonfld_filt_perc=0.30;
+else
+    dist_thresh=150;
+    fld_sz_thresh=6;
+    nonfld_filt_perc=.26;%.3;%.17;%.26;%0.26;%.3;%0.68;%0.45;
+end
+dbscan_epsilon=3;
+dbscan_min_pts=1;
+use_ac=1; % choose to use autocorrelogram (ac) (1) or standard rate map (0)
+load_custom_ac=1; % load custom ac saved from a file
+ac_xaxis_dim=63; % for custom ac, use this x-axis length
+% plotting
+plot_fields_detected=1;
+plot_orig_ratemap=0;
+plot_legend=0;
+control_window_size=0;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

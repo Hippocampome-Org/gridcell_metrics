@@ -1,0 +1,8 @@
+/*.jpg
+/*.png
+/*.jpeg
+/*.gif
+/*.webp
+src/heat_maps_real_new_cells
+plots/real_new_cells
+*.xcf
