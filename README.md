@@ -1,6 +1,5 @@
 # Gridcell Metrics Reporting
-<br>
-<br>Requirements:
+Requirements:
 <br>The DBSCAN clustering algorithm from MATLAB’s (mathworks.com) Statistics and Machine Learning Toolbox
 <br>
 <br>Usage:
