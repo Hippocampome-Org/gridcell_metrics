@@ -4,5 +4,8 @@
 /*.gif
 /*.webp
 src/heat_maps_real_new_cells
+src/heat_maps_real_new_cells/*
 plots/real_new_cells
+plots/real_new_cells/*
 *.xcf
+src/saved_results/*

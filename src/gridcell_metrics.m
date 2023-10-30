@@ -21,7 +21,7 @@ load("heat_maps_ac_list.mat");
 % real cell file_number 15 = small, 23 = medium, 17 = large
 
 %%%%%%% parameter options %%%%%%%
-heat_map_selection=large;%23;%29;%15;%23;%medium;
+heat_map_selection=9;%36;%23;%29;%15;%23;%medium;
 custom=0; custom2=0; custom3=0; custom4=0;
 use_tophat_filter=0;
 use_centsurr_filter=0;
@@ -39,14 +39,18 @@ use_centsurr_filter=0;
 %     fld_sz_thresh=10;
 %     nonfld_filt_perc=0.30;
 % else
-    dist_thresh=150;%15;%150;%50;%20;
+    dist_thresh=500;%150;%15;%150;%50;%20;
     fld_sz_thresh=6;
-    nonfld_filt_perc=.26;%.15;%.35;%.26;%.3;%.17;%.26;%0.26;%.3;%0.68;%0.45;
+    if exist('saved_nonfld_filt_perc','var')
+        nonfld_filt_perc=saved_nonfld_filt_perc;
+    else
+        nonfld_filt_perc=.26;%.26;%.15;%.35;%.26;%.3;%.17;%.26;%0.26;%.3;%0.68;%0.45;
+    end
 % end
 dbscan_epsilon=3;
 dbscan_min_pts=1;
 load_custom_rm=0; % load custom rate map saved from a file
-use_ac=0; % choose to use autocorrelogram (ac) (1) or standard rate map (0)
+use_ac=1; % choose to use autocorrelogram (ac) (1) or standard rate map (0)
 load_custom_ac=0; % load custom ac saved from a file
 ac_xaxis_dim=63; % for custom ac, use this x-axis length
 only_center_seven=1; % filter out fields except for seven closest to the plot center
@@ -91,6 +95,11 @@ if load_custom_ac
     load("heat_maps_ac_custom_list.mat");
     load(heat_maps_ac_custom_list(heat_map_selection));
     heat_map=heat_map_custom;
+end
+if exist('use_newly_generated_ac','var')
+    if str2num([string(create_ac)]) == 1
+        heat_map=auto_corr_rm;
+    end
 end
 %heat_map=tophatFiltered;
 heat_map_orig=heat_map;
@@ -305,10 +314,18 @@ angle_hist=histogram(angles,BinWidth=hist_binwidth);
 hist_vals=linspace(min(angle_hist.BinLimits),max(angle_hist.BinLimits),length(angle_hist.Values));
 hist_bins=angle_hist.Values;
 
+% find smallest angle from first centroid
+cent_one_angles=[];
+for i=2:length(centroid_x)
+    a=find_angle(centroid_x(1),centroid_y(1),centroid_x(i),centroid_y(i));
+    cent_one_angles=[cent_one_angles,a];
+end
+
 mean_field_sizes=sum(field_sizes)/size(field_sizes,2);
 mean_field_dists=sum(field_distances)/size(field_distances,2);
 fprintf("Mean field sizes (area): %.2f\n",mean_field_sizes);
 fprintf("Mean field distances: %.2f\n",mean_field_dists);
+fprintf("Minimum angle: %.2f\n",min(angles));
 fprintf("Grid fields reported: %d\n",fields_num);
 if only_center_seven
     fprintf("Grid fields filtered out: %d\n",filter_out);
@@ -329,11 +346,43 @@ if print_angles
         fprintf("%.1f: %.0f; ",hist_sorted(i,1),hist_sorted(i,2));
     end
 end
-fprintf("Centroids ");
+fprintf("Centroids: ");
 for i=1:length(centroid_x)
     fprintf("(%.2f,%.2f) ",centroid_x(i),centroid_y(i));
 end
+fprintf("\nAngles from first centroid: ");
+for i=1:(length(centroid_x)-1)
+    fprintf("%.2f",cent_one_angles(i));
+    if i ~= (length(centroid_x)-1) fprintf(", "); end
+end
+fprintf("\nCustom angle reporting: ");
+c1=1; c2=7;
+a=find_angle(centroid_x(c1),centroid_y(c1),centroid_x(c2),centroid_y(c2));
+fprintf("centroid %d to %d: %.2f",c1,c2,a);
 fprintf("\n");
+
+% save scores
+if exist('save_field_size','var')
+    if str2num([string(save_field_size)]) == 1
+        fieldsize_file = fopen('saved_results/field_size_records.txt','at'); % append file
+	    fprintf(fieldsize_file,"%f\n",mean_field_sizes);
+	    fclose(fieldsize_file);
+    end
+end
+if exist('save_field_spacing','var')
+    if str2num([string(save_field_spacing)]) == 1
+        fieldspacing_file = fopen('saved_results/field_spacing_records.txt','at'); % append file
+	    fprintf(fieldspacing_file,"%f\n",mean_field_dists);
+	    fclose(fieldspacing_file);
+    end
+end
+if exist('save_field_rotation','var')
+    if str2num([string(save_field_rotation)]) == 1
+        fieldrotation_file = fopen('saved_results/save_field_rotation.txt','at'); % append file
+	    fprintf(fieldrotation_file,"%f\n",min(angles));
+	    fclose(fieldrotation_file);
+    end
+end
 
 % plotting
 if control_window_size
