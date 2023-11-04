@@ -5,7 +5,8 @@ auto_export_plots_custom=1;
 plot_fields_detected_custom=1;
 plot_orig_ratemap_custom=0;
 
-for i=[26,30,33]
+for i=20:33
+%for i=[26,30,33]
     fprintf("\nnow processing %d%%\n",i);
     filename_sizes_custom=strcat('saved_results/field_size_records_',string(i),'perc.txt');
     filename_spacings_custom=strcat('saved_results/field_spacings_records_',string(i),'perc.txt');
