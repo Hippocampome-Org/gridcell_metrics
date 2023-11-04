@@ -2,6 +2,8 @@ save_field_size=1;
 save_field_spacing=1;
 minimal_plotting_mode_custom=1;
 auto_export_plots_custom=1;
+plot_fields_detected_custom=1;
+plot_orig_ratemap_custom=0;
 
 for i=[26,30,33]
     fprintf("\nnow processing %d%%\n",i);

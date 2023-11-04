@@ -74,6 +74,8 @@ if use_ac == 0 only_center_seven=0; end
 % plotting
 plot_fields_detected=1;
 plot_orig_ratemap=1;
+if exist('plot_fields_detected_custom','var') plot_fields_detected=plot_fields_detected_custom; end
+if exist('plot_orig_ratemap_custom','var') plot_orig_ratemap=plot_orig_ratemap_custom; end
 plot_legend=0; print_angles=0;
 control_window_size=0;
 if custom load_custom_rm=1; plot_orig_ratemap=0; end
@@ -535,7 +537,7 @@ if plot_fields_detected || auto_export_plots
         axis square
     else
         plot_title=strcat('Cell #',string(heat_map_selection),' with Ratio=',string(size_space_ratio));
-                plot_title=strcat('Cell #',string(heat_map_selection),' Field Detection Overlay');
+        %plot_title=strcat('Cell #',string(heat_map_selection),' Field Detection Overlay');
         title(plot_title);
         set(legend,'Visible','off');
         set(gca,'fontsize', 14);
