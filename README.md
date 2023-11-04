@@ -7,9 +7,9 @@ Requirements:
 <br>
 <br>Required Parameters:
 <br>heat_map_selection: select cell to analyze (cells are numbered and file locations are stored in heat_maps_list.mat and heat_maps_ac_list.mat).
+<br>nonfld_filt_perc: threshold for non-field filtering to perform. Range is 0-1.
 <br>
 <br>Optional Parameters:
-<br>nonfld_filt_perc: threshold for non-field filtering to perform. Range is 0-1.
 <br>use_ac: use autocorrelogram (1) or rate map (0).
 <br>only_center_seven: filter intended for autocorrelograms where fields other than the center 7 are filtered out.
 <br>plot_fields_detected: plot fields the software detected.
