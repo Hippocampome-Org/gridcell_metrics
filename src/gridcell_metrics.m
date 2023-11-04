@@ -498,6 +498,7 @@ if exist('save_field_rotation','var')
 end
 
 % plotting
+size_space_ratio=mean_field_dists/((mean_field_sizes/3.14)^0.5);
 if control_window_size
     if plot_fields_detected && plot_orig_ratemap
         f = figure;
@@ -525,11 +526,12 @@ if plot_orig_ratemap || auto_export_plots
         xlabel('animal location on x axis')
         ylabel('animal location on y axis')
     else
-        plot_title=strcat('Grid Fields Detected with Cell #',string(heat_map_selection),' and Threshold=',string(nonfld_filt_perc));
+        plot_title=strcat('Cell #',string(heat_map_selection),' with Ratio=',string(size_space_ratio));
         title(plot_title);
         %xlabel('animal position on x axis')
         %ylabel('animal position on y axis')
         set(gca,'fontsize', 14);
+        axis square
     end
     if auto_export_plots==1
         ax = gca;
@@ -544,7 +546,7 @@ if plot_fields_detected || auto_export_plots
     ylim([1 res]);
     xlim([1 res]);
     set(gca,'YDir','normal')
-    plot_title=strcat('Grid Fields Detected with Cell #',string(heat_map_selection),' and Threshold=',string(nonfld_filt_perc));
+    plot_title=strcat('Cell #',string(heat_map_selection),' with Ratio=',string(size_space_ratio));
     title(plot_title);
     if minimal_plotting_mode==0
         xlabel('animal position on x axis')
@@ -552,6 +554,7 @@ if plot_fields_detected || auto_export_plots
     else
         set(legend,'Visible','off');
         set(gca,'fontsize', 14);
+        axis square
     end
     if auto_export_plots==1
         ax = gca;
