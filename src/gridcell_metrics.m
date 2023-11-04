@@ -14,6 +14,7 @@
     https://www.mathworks.com/matlabcentral/answers/501948-how-to-automatically-find-the-angle-from-2-points
     https://www.mathworks.com/matlabcentral/answers/629408-how-to-use-convolution-on-a-2d-matrix-with-a-kernel
     http://agamtyagi.blogspot.com/2013/02/matlab-code-for-famous-mexican-hat.html
+    https://gamedev.stackexchange.com/questions/4467/comparing-angles-and-working-out-the-difference
 %}
 
 load("heat_maps_list.mat"); small=35; medium=36; large=37;
@@ -21,10 +22,27 @@ load("heat_maps_ac_list.mat");
 % real cell file_number 15 = small, 23 = medium, 17 = large
 
 %%%%%%% parameter options %%%%%%%
-heat_map_selection=9;%36;%23;%29;%15;%23;%medium;
+heat_map_selection=26;%36;%23;%29;%15;%23;%medium;
+if exist('heat_map_selection_custom','var')
+    heat_map_selection=heat_map_selection_custom;
+end
 custom=0; custom2=0; custom3=0; custom4=0;
 use_tophat_filter=0;
 use_centsurr_filter=0;
+minimal_plotting_mode=1;
+auto_export_plots=1;
+filename_sizes='saved_results/field_size_records.txt';
+if exist('filename_sizes_custom','var')
+    filename_sizes=filename_sizes_custom;
+end
+filename_spacings='saved_results/field_spacing_records.txt';
+if exist('filename_spacings_custom','var')
+    filename_spacings=filename_spacings_custom;
+end
+filename_rotations='saved_results/save_field_rotation.txt';
+if exist('filename_rotations_custom','var')
+    filename_rotations=filename_rotations_custom;
+end
 % thresholds
 % if heat_map_selection==small
 %     dist_thresh=20; % max field distance
@@ -56,9 +74,9 @@ ac_xaxis_dim=63; % for custom ac, use this x-axis length
 only_center_seven=1; % filter out fields except for seven closest to the plot center
 if use_ac == 0 only_center_seven=0; end
 % plotting
-plot_fields_detected=1;
+plot_fields_detected=0;
 plot_orig_ratemap=1;
-plot_legend=1; print_angles=0;
+plot_legend=0; print_angles=0;
 control_window_size=0;
 if custom
     load_custom_rm=1;
@@ -81,7 +99,14 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if plot_fields_detected && plot_orig_ratemap control_window_size=1; end
-load(heat_maps(heat_map_selection));
+if exist('use_newly_generated_rm','var')
+    % only load heat map from file if no heat map is already in memory
+    if str2num([string(use_newly_generated_rm)]) == 0
+        load(heat_maps(heat_map_selection));
+    end
+else
+    load(heat_maps(heat_map_selection));
+end
 if load_custom_rm
     load("heat_maps_real_custom_list.mat");
     load(heat_maps_real_custom_list(heat_map_selection));
@@ -236,8 +261,8 @@ end
 % optional filter to only keep 7 fields closest to the center
 closest_seven=[];
 field_distances2=[];
-center_point=size(heat_map_ac,2)/2;
 if only_center_seven
+    center_point=size(heat_map_ac,2)/2;
     for i=1:fields_num
         field_dist=euc_d(centroid_x(i),centroid_y(i),center_point,center_point);
         field_distances2=[field_distances2;[i,field_dist]];
@@ -266,32 +291,114 @@ end
 
 % find field spacing
 field_distances=[];
+% find most center field
+center_field_idx=1; % center field index
+center_x=size(heat_map,1)/2;
+center_y=size(heat_map,2)/2;
+smallest_dist=euc_d(centroid_x(1),centroid_y(1),center_x,center_y);
 for i=1:fields_num
-    for j=1:fields_num
-        % check that fields are close enough
-        field_dist=euc_d(centroid_x(i),centroid_y(i),centroid_x(j),centroid_y(j));
-        if field_dist < dist_thresh && field_dist~=0
-            field_distances=[field_distances,field_dist];
-        end
+    field_dist=euc_d(centroid_x(i),centroid_y(i),center_x,center_y);
+    if (field_dist<smallest_dist)
+        smallest_dist=field_dist;
+        center_field_idx=i;
     end
 end
 
-% find field sizes
-field_sizes=[];
+% find distance from center field
+for i=1:fields_num
+    field_dist=euc_d(centroid_x(center_field_idx),centroid_y(center_field_idx),centroid_x(i),centroid_y(i));
+    %if field_dist < dist_thresh && field_dist~=0 % check that fields are close enough
+    if field_dist~=0 % check that the field is not compared to itself
+        field_distances=[field_distances,field_dist];
+    end
+end
+
+%{
+% commented out because development was not completed on this
+% find surrounding field spacing
 % for i=1:fields_num
-%     pts_x=[];
-%     pts_y=[];
-%     for j=1:most_points
-%         if fields_x(i,j)~=0
-%             pts_x=[pts_x,fields_x(i,j)];
-%             pts_y=[pts_y,fields_y(i,j)];
+%     if i ~= center_field_idx % avoid comparisons with center field because those have already been done
+%         smallest_dist=euc_d(centroid_x(i),centroid_y(i),centroid_x(1),centroid_y(1));
+%         smallest_dist_idx=1;
+%         for j=1:fields_num
+%             field_dist=euc_d(centroid_x(i),centroid_y(i),centroid_x(j),centroid_y(j));
+%             if field_dist~=0 && field_dist<smallest_dist
+%                 smallest_dist=field_dist;
+%                 smallest_dist_idx=j;
+%             end
 %         end
+%         field_distances=[field_distances,smallest_dist];
 %     end
-%     size_x=max(pts_x)-min(pts_x);
-%     size_y=max(pts_y)-min(pts_y);
-%     field_sizes=[field_sizes,(size_x+size_y)/2];
 % end
 
+% find fields with similar angles to center field
+fields_similar_angles=[];
+fields_similar_angles_values=[];
+fields_similar_angles_values_2=[];
+for i=1:fields_num
+    if i ~= center_field_idx
+    angle_field_1=find_angle(centroid_x(i),centroid_y(i),centroid_x(center_field_idx),centroid_y(center_field_idx));
+    field_2_idx=i+1; if field_2_idx>fields_num field_2_idx=field_2_idx-fields_num; end
+    if field_2_idx==center_field_idx field_2_idx=field_2_idx+1; end
+    if field_2_idx>fields_num field_2_idx=field_2_idx-fields_num; end
+    angle_field_2=find_angle(centroid_x(field_2_idx),centroid_y(field_2_idx),centroid_x(center_field_idx),centroid_y(center_field_idx));
+    % normalize angle difference
+    norm_angle_difference = 180 - abs(abs(angle_field_1 - angle_field_2) - 180);
+    smallest_dist=norm_angle_difference;
+    smallest_dist_idx=field_2_idx;
+    for j=1:fields_num
+        if j ~= center_field_idx
+        angle_field_1=find_angle(centroid_x(i),centroid_y(i),centroid_x(center_field_idx),centroid_y(center_field_idx));
+        angle_field_2=find_angle(centroid_x(j),centroid_y(j),centroid_x(center_field_idx),centroid_y(center_field_idx));
+        norm_angle_difference = 180 - abs(abs(angle_field_1 - angle_field_2) - 180);
+        if (i ~= j && norm_angle_difference < smallest_dist)
+            % check to avoid adding fields pair already included
+            skip=0;
+            if size(fields_similar_angles,1)>0
+                for k=1:size(fields_similar_angles,1)
+                    f1=fields_similar_angles(k,1);
+                    f2=fields_similar_angles(k,2);
+                    if (i==f1 && j==f2) || (i==f2 && j==f1)
+                        skip=1;
+                    end
+                end
+            end
+            if skip==0
+                smallest_dist = norm_angle_difference;
+                smallest_dist_idx = j;
+            end
+        end
+%       commented out because development is incomplete
+%         % direction of angles
+%         norm_angle_1_direction=angle_field_1;
+%         norm_angle_2_direction=angle_field_2;
+%         % this assumes a difference no more than 90 degrees with angle 2 when 
+%         % angle 1 is between 0 and 90 degrees
+%         if (angle_field_1 < 90 && angle_field_2 > 270) norm_angle_2_direction=norm_angle_2_direction-360;
+%         if (angle_field_2 < 90 && angle_field_1 > 270) norm_angle_1_direction=norm_angle_2_direction-360;
+%         direction_sign=norm_angle_2_direction-norm_angle_1_direction;
+%         direction=1; % counter-clockwise direction
+%         if direction_sign>0
+%             direction=0; % clockwise direction
+%         end
+        end
+    end
+    fields_similar_angles=[fields_similar_angles; [i,smallest_dist_idx]];
+    % report angles
+    angle_field_1=find_angle(centroid_x(i),centroid_y(i),centroid_x(center_field_idx),centroid_y(center_field_idx));
+    angle_field_2=find_angle(centroid_x(smallest_dist_idx),centroid_y(smallest_dist_idx),centroid_x(center_field_idx),centroid_y(center_field_idx));
+    norm_angle_difference = 180 - abs(abs(angle_field_1 - angle_field_2) - 180);
+    fields_similar_angles_values=[fields_similar_angles_values, norm_angle_difference];
+    fields_similar_angles_values_2=[fields_similar_angles_values_2;[angle_field_1,angle_field_2]];
+    % % %
+    field_dist=euc_d(centroid_x(i),centroid_y(i),centroid_x(smallest_dist_idx),centroid_y(smallest_dist_idx));
+    field_distances=[field_distances,field_dist];
+    end
+end
+%}
+
+% find field sizes
+field_sizes=[];
 for i=1:fields_num
     field_sizes=[field_sizes,length(find(fields_x(i,:)>0))];
 end
@@ -322,9 +429,13 @@ for i=2:length(centroid_x)
 end
 
 mean_field_sizes=sum(field_sizes)/size(field_sizes,2);
+%median_field_sizes=median(field_sizes);
 mean_field_dists=sum(field_distances)/size(field_distances,2);
+%median_field_dists=median(field_distances);
 fprintf("Mean field sizes (area): %.2f\n",mean_field_sizes);
+%fprintf("Median field sizes (area): %.2f\n",median_field_sizes);
 fprintf("Mean field distances: %.2f\n",mean_field_dists);
+%fprintf("Median field distances: %.2f\n",median_field_dists);
 fprintf("Minimum angle: %.2f\n",min(angles));
 fprintf("Grid fields reported: %d\n",fields_num);
 if only_center_seven
@@ -355,30 +466,32 @@ for i=1:(length(centroid_x)-1)
     fprintf("%.2f",cent_one_angles(i));
     if i ~= (length(centroid_x)-1) fprintf(", "); end
 end
+%{
 fprintf("\nCustom angle reporting: ");
 c1=1; c2=7;
 a=find_angle(centroid_x(c1),centroid_y(c1),centroid_x(c2),centroid_y(c2));
 fprintf("centroid %d to %d: %.2f",c1,c2,a);
+%}
 fprintf("\n");
 
 % save scores
 if exist('save_field_size','var')
     if str2num([string(save_field_size)]) == 1
-        fieldsize_file = fopen('saved_results/field_size_records.txt','at'); % append file
+        fieldsize_file = fopen(filename_sizes,'at'); % append file
 	    fprintf(fieldsize_file,"%f\n",mean_field_sizes);
 	    fclose(fieldsize_file);
     end
 end
 if exist('save_field_spacing','var')
     if str2num([string(save_field_spacing)]) == 1
-        fieldspacing_file = fopen('saved_results/field_spacing_records.txt','at'); % append file
+        fieldspacing_file = fopen(filename_spacings,'at'); % append file
 	    fprintf(fieldspacing_file,"%f\n",mean_field_dists);
 	    fclose(fieldspacing_file);
     end
 end
 if exist('save_field_rotation','var')
     if str2num([string(save_field_rotation)]) == 1
-        fieldrotation_file = fopen('saved_results/save_field_rotation.txt','at'); % append file
+        fieldrotation_file = fopen(filename_rotations,'at'); % append file
 	    fprintf(fieldrotation_file,"%f\n",min(angles));
 	    fclose(fieldrotation_file);
     end
@@ -399,31 +512,57 @@ if plot_fields_detected && plot_orig_ratemap
     tiledlayout(1,2)
     nexttile
 end
-if plot_orig_ratemap
+if plot_orig_ratemap || auto_export_plots
     axis('tight')
     imagesc(heat_map_orig);
-    title('Original Rate Map');
     %colormap gray;
     ylim([1 res]);
     xlim([1 res]);
     set(gca,'YDir','normal')
-    colorbar;
-    xlabel('animal location on x axis')
-    ylabel('animal location on y axis')
+    if minimal_plotting_mode==0
+        colorbar;
+        title('Original Rate Map');
+        xlabel('animal location on x axis')
+        ylabel('animal location on y axis')
+    else
+        plot_title=strcat('Grid Fields Detected with Cell #',string(heat_map_selection),' and Threshold=',string(nonfld_filt_perc));
+        title(plot_title);
+        %xlabel('animal position on x axis')
+        %ylabel('animal position on y axis')
+        set(gca,'fontsize', 14);
+    end
+    if auto_export_plots==1
+        ax = gca;
+        plot_filename=strcat('../../../../holger_gridcell_theory/plots/auto_export/n',string(heat_map_selection),'_t',string(nonfld_filt_perc*100),'_rm.png');
+        exportgraphics(ax,plot_filename,'Resolution',300) 
+    end
 end
 if control_window_size && plot_fields_detected && plot_orig_ratemap nexttile; end
-if plot_fields_detected
+if plot_fields_detected || auto_export_plots
 %     gscatter(heat_map2(:,1),heat_map2(:,2),idx);
     gscatter(heat_map2(:,2),heat_map2(:,1),idx);
-    title('Grid Fields Detected');
     ylim([1 res]);
     xlim([1 res]);
     set(gca,'YDir','normal')
-    xlabel('neuron position on x axis')
-    ylabel('neuron position on y axis')    
+    plot_title=strcat('Grid Fields Detected with Cell #',string(heat_map_selection),' and Threshold=',string(nonfld_filt_perc));
+    title(plot_title);
+    if minimal_plotting_mode==0
+        xlabel('animal position on x axis')
+        ylabel('animal position on y axis')
+    else
+        set(legend,'Visible','off');
+        set(gca,'fontsize', 14);
+    end
+    if auto_export_plots==1
+        ax = gca;
+        plot_filename=strcat('../../../../holger_gridcell_theory/plots/auto_export/n',string(heat_map_selection),'_t',string(nonfld_filt_perc*100),'_fd.png');
+        exportgraphics(ax,plot_filename,'Resolution',300) 
+    end
 end
 if plot_legend==0 && (plot_fields_detected==1 || plot_orig_ratemap==1)
-    set(legend,'Visible','off');
+    if minimal_plotting_mode==0
+        set(legend,'Visible','off');
+    end
 end
 
 function d=euc_d(x1,y1,x2,y2)
@@ -431,7 +570,8 @@ function d=euc_d(x1,y1,x2,y2)
 end
 
 function a=find_angle(x1,y1,x2,y2)
-    a=atand(abs(y2-y1)/abs(x2-x1)); % angle in degrees
+    %a=atand(abs(y2-y1)/abs(x2-x1)); % angle in degrees
+    a=atan2(y2 - y1, x2 - x1) * 180 / pi; % angle in degrees
 end
 
 function [filtered] = basic_convolution(image,kernel) 
