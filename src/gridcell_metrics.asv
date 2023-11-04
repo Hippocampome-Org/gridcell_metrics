@@ -3,12 +3,15 @@
     
     Author: Nate Sutton, 2023
     
+    Required parameter:
+    - nonfld_filt_perc: percentage of lowest firing rates to remove from
+    data. This removes non-field firing.
+
+    Optional parameters:
     - dist_thresh: maximum field distance to be considered in group of
     field distances.
     - fld_sz_thresh: minimum field size that has contact with a border for
     the field to avoid being filtered out.
-    - nonfld_filt_perc: percentage of lowest firing rates to remove from
-    data. This removes non-field firing.
     
     references: https://www.mathworks.com/help/stats/dbscan.html
     https://www.mathworks.com/matlabcentral/answers/501948-how-to-automatically-find-the-angle-from-2-points
@@ -22,15 +25,21 @@ load("heat_maps_ac_list.mat");
 % real cell file_number 15 = small, 23 = medium, 17 = large
 
 %%%%%%% parameter options %%%%%%%
-heat_map_selection=26;%36;%23;%29;%15;%23;%medium;
+heat_map_selection=1;%36;%23;%29;%15;%23;%medium;
 if exist('heat_map_selection_custom','var')
     heat_map_selection=heat_map_selection_custom;
 end
 custom=0; custom2=0; custom3=0; custom4=0;
 use_tophat_filter=0;
 use_centsurr_filter=0;
-minimal_plotting_mode=1;
-auto_export_plots=1;
+minimal_plotting_mode=0;
+if exist('minimal_plotting_mode_custom','var')
+    minimal_plotting_mode=minimal_plotting_mode_custom;
+end
+auto_export_plots=0;
+if exist('auto_export_plots_custom','var')
+    auto_export_plots=auto_export_plots_custom;
+end
 filename_sizes='saved_results/field_size_records.txt';
 if exist('filename_sizes_custom','var')
     filename_sizes=filename_sizes_custom;
@@ -43,27 +52,16 @@ filename_rotations='saved_results/save_field_rotation.txt';
 if exist('filename_rotations_custom','var')
     filename_rotations=filename_rotations_custom;
 end
-% thresholds
-% if heat_map_selection==small
-%     dist_thresh=20; % max field distance
-%     fld_sz_thresh=6; % min field neurons at border
-%     nonfld_filt_perc=0.26; % low firing filter out
-% elseif heat_map_selection==medium
-%     dist_thresh=20;
-%     fld_sz_thresh=6;
-%     nonfld_filt_perc=0.26;
-% elseif heat_map_selection==large
-%     dist_thresh=50;
-%     fld_sz_thresh=10;
-%     nonfld_filt_perc=0.30;
-% else
-    dist_thresh=500;%150;%15;%150;%50;%20;
-    fld_sz_thresh=6;
-    if exist('saved_nonfld_filt_perc','var')
-        nonfld_filt_perc=saved_nonfld_filt_perc;
-    else
-        nonfld_filt_perc=.26;%.26;%.15;%.35;%.26;%.3;%.17;%.26;%0.26;%.3;%0.68;%0.45;
-    end
+% threshold
+nonfld_filt_perc=.26;
+if exist('saved_nonfld_filt_perc','var')
+    nonfld_filt_perc=saved_nonfld_filt_perc;
+end
+% optional settings
+use_dist_thresh=0;
+dist_thresh=500;
+use_fld_sz_thresh=0;
+fld_sz_thresh=6;
 % end
 dbscan_epsilon=3;
 dbscan_min_pts=1;
@@ -74,8 +72,8 @@ ac_xaxis_dim=63; % for custom ac, use this x-axis length
 only_center_seven=1; % filter out fields except for seven closest to the plot center
 if use_ac == 0 only_center_seven=0; end
 % plotting
-plot_fields_detected=0;
-plot_orig_ratemap=1;
+plot_fields_detected=1;
+plot_orig_ratemap=0;
 plot_legend=0; print_angles=0;
 control_window_size=0;
 if custom
@@ -307,9 +305,14 @@ end
 % find distance from center field
 for i=1:fields_num
     field_dist=euc_d(centroid_x(center_field_idx),centroid_y(center_field_idx),centroid_x(i),centroid_y(i));
-    %if field_dist < dist_thresh && field_dist~=0 % check that fields are close enough
     if field_dist~=0 % check that the field is not compared to itself
-        field_distances=[field_distances,field_dist];
+        if use_dist_thresh==1
+            if field_dist < dist_thresh % check that fields are close enough
+                field_distances=[field_distances,field_dist];
+            end
+        else
+            field_distances=[field_distances,field_dist];
+        end
     end
 end
 
@@ -498,6 +501,7 @@ if exist('save_field_rotation','var')
 end
 
 % plotting
+size_space_ratio=(mean_field_dists/((mean_field_sizes/3.14)^0.5)/2);
 if control_window_size
     if plot_fields_detected && plot_orig_ratemap
         f = figure;
@@ -513,10 +517,6 @@ if plot_fields_detected && plot_orig_ratemap
     nexttile
 end
 if plot_orig_ratemap || auto_export_plots
-    if minimal_plotting_mode==1
-        f = figure;
-        f.Position = [100 100 450 400];
-    end
     axis('tight')
     imagesc(heat_map_orig);
     %colormap gray;
@@ -525,19 +525,23 @@ if plot_orig_ratemap || auto_export_plots
     set(gca,'YDir','normal')
     if minimal_plotting_mode==0
         colorbar;
-        title('Original Rate Map');
+        plot_title=strcat('Original Rate Map for Cell #',string(heat_map_selection));
+        title(plot_title);
         xlabel('animal location on x axis')
         ylabel('animal location on y axis')
+        set(gca,'fontsize', 14);
+        axis square
     else
-        plot_title=strcat('Grid Fields Detected with Cell #',string(heat_map_selection),' and Threshold=',string(nonfld_filt_perc));
+        plot_title=strcat('Cell #',string(heat_map_selection),' with Ratio=',string(size_space_ratio));
         title(plot_title);
         %xlabel('animal position on x axis')
         %ylabel('animal position on y axis')
         set(gca,'fontsize', 14);
+        axis square
     end
     if auto_export_plots==1
         ax = gca;
-        plot_filename=strcat('../../../../holger_gridcell_theory/plots/auto_export2/n',string(heat_map_selection),'_t',string(nonfld_filt_perc*100),'_rm.png');
+        plot_filename=strcat('../../../../holger_gridcell_theory/plots/auto_export/n',string(heat_map_selection),'_t',string(nonfld_filt_perc*100),'_rm.png');
         exportgraphics(ax,plot_filename,'Resolution',300) 
     end
 end
@@ -548,18 +552,24 @@ if plot_fields_detected || auto_export_plots
     ylim([1 res]);
     xlim([1 res]);
     set(gca,'YDir','normal')
-    plot_title=strcat('Grid Fields Detected with Cell #',string(heat_map_selection),' and Threshold=',string(nonfld_filt_perc));
-    title(plot_title);
     if minimal_plotting_mode==0
+        plot_title=strcat('Cell #',string(heat_map_selection),' with Threshold=',string(nonfld_filt_perc),' and Ratio=',string(size_space_ratio));
+        title(plot_title);
         xlabel('animal position on x axis')
         ylabel('animal position on y axis')
+        set(gca,'fontsize', 14);
+        axis square
     else
+        plot_title=strcat('Cell #',string(heat_map_selection),' with Ratio=',string(size_space_ratio));
+                plot_title=strcat('Cell #',string(heat_map_selection),' Field Detection Overlay');
+        title(plot_title);
         set(legend,'Visible','off');
         set(gca,'fontsize', 14);
+        axis square
     end
     if auto_export_plots==1
         ax = gca;
-        plot_filename=strcat('../../../../holger_gridcell_theory/plots/auto_export2/n',string(heat_map_selection),'_t',string(nonfld_filt_perc*100),'_fd.png');
+        plot_filename=strcat('../../../../holger_gridcell_theory/plots/auto_export/n',string(heat_map_selection),'_t',string(nonfld_filt_perc*100),'_fd.png');
         exportgraphics(ax,plot_filename,'Resolution',300) 
     end
 end
