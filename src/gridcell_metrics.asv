@@ -53,14 +53,14 @@ if exist('filename_rotations_custom','var')
     filename_rotations=filename_rotations_custom;
 end
 % threshold
-nonfld_filt_perc=.26;
+nonfld_filt_perc=.3;
 if exist('saved_nonfld_filt_perc','var')
     nonfld_filt_perc=saved_nonfld_filt_perc;
 end
 % optional settings
 use_dist_thresh=0;
 dist_thresh=500;
-use_fld_sz_thresh=0;
+use_fld_sz_thresh=1;
 fld_sz_thresh=6;
 % end
 dbscan_epsilon=3;
@@ -69,31 +69,19 @@ load_custom_rm=0; % load custom rate map saved from a file
 use_ac=1; % choose to use autocorrelogram (ac) (1) or standard rate map (0)
 load_custom_ac=0; % load custom ac saved from a file
 ac_xaxis_dim=63; % for custom ac, use this x-axis length
-only_center_seven=1; % filter out fields except for seven closest to the plot center
+only_center_seven=0; % filter out fields except for seven closest to the plot center
 if use_ac == 0 only_center_seven=0; end
 % plotting
 plot_fields_detected=1;
 plot_orig_ratemap=0;
+if exist('plot_fields_detected_custom','var') plot_fields_detected=plot_fields_detected_custom; end
+if exist('plot_orig_ratemap_custom','var') plot_orig_ratemap=plot_orig_ratemap_custom; end
 plot_legend=0; print_angles=0;
 control_window_size=0;
-if custom
-    load_custom_rm=1;
-    plot_orig_ratemap=0;
-end
-if custom2
-    load_custom_ac=1;
-    plot_orig_ratemap=0;
-end
-if custom3
-    load_custom_rm=1;
-    use_ac=0;
-    only_center_seven=0;
-end
-if custom4
-    load_custom_rm=0;
-    use_ac=1;
-    only_center_seven=1;
-end
+if custom load_custom_rm=1; plot_orig_ratemap=0; end
+if custom2 load_custom_ac=1; plot_orig_ratemap=0; end
+if custom3 load_custom_rm=1; use_ac=0; only_center_seven=0; end
+if custom4 load_custom_rm=0; use_ac=1; only_center_seven=1; end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if plot_fields_detected && plot_orig_ratemap control_window_size=1; end
@@ -124,7 +112,6 @@ if exist('use_newly_generated_ac','var')
         heat_map=auto_corr_rm;
     end
 end
-%heat_map=tophatFiltered;
 heat_map_orig=heat_map;
 if use_tophat_filter
     se = strel('disk',5);
@@ -147,8 +134,6 @@ if use_centsurr_filter
     % axis off
 end
 
-% heat_map_orig=heat_map_flt3;
-% heat_map_orig=tophatFiltered;
 res = size(heat_map,2); % x-axis resolution
 heat_map2=[];
 
@@ -167,15 +152,9 @@ if load_custom_ac==0
 end
 
 % find fields
-% convert to (x,y) columns
-%heat_map_custom=zeros(ac_xaxis_dim);
-% if use_ac
-%     heat_map=fliplr(heat_map); % correct heat_map points by flipping left with right when using ac
-% end
 for y=1:res
     for x=1:res
         if heat_map(y,x) > 0.0
-            %heat_map2=[heat_map2;[x,y]];
             heat_map2=[heat_map2;[y,x]];
         end
     end
@@ -195,8 +174,6 @@ for i=1:fields_num
     for j=1:size(idx,1)
         if idx(j)==i
             pnt_ctr=pnt_ctr+1;
-%             fields_x(i,pnt_ctr)=heat_map2(j,1);
-%             fields_y(i,pnt_ctr)=heat_map2(j,2);
             fields_x(i,pnt_ctr)=heat_map2(j,2);
             fields_y(i,pnt_ctr)=heat_map2(j,1);
         end
@@ -205,23 +182,26 @@ end
 
 % filter out fields at edges without enough points
 filter_out=[];
-for i=1:fields_num
-    non_zero=find(fields_x(i,:)~=0);
-    non_zero_sz=size(non_zero,2);
-    fld_x=fields_x(non_zero);
-    fld_y=fields_y(non_zero);
-    % search for border contact
-    border_w=find(fld_x<2);
-    border_e=find(fld_x>(res-1));
-    border_s=find(fld_y<2);
-    border_n=find(fld_y>(res-1));
-    if isempty(border_n) border_n=0; else border_n=1; end
-    if isempty(border_s) border_s=0; else border_s=1; end
-    if isempty(border_e) border_e=0; else border_e=1; end
-    if isempty(border_w) border_w=0; else border_w=1; end
-    if border_w || border_n || border_e || border_s
-        if non_zero_sz<=fld_sz_thresh
-            filter_out=[filter_out,i];
+if use_fld_sz_thresh==1
+    for i=1:fields_num
+        non_zero=find(fields_x(i,:)~=0);
+        non_zero_sz=size(non_zero,2);
+        fld_x=[];fld_y=[];
+        fld_x=fields_x(non_zero);
+        fld_y=fields_y(non_zero);
+        % search for border contact
+        border_w=find(fld_x<2);
+        border_e=find(fld_x>(res-1));
+        border_s=find(fld_y<2);
+        border_n=find(fld_y>(res-1));
+        if isempty(border_n) border_n=0; else border_n=1; end
+        if isempty(border_s) border_s=0; else border_s=1; end
+        if isempty(border_e) border_e=0; else border_e=1; end
+        if isempty(border_w) border_w=0; else border_w=1; end
+        if border_w || border_n || border_e || border_s
+            if non_zero_sz<=fld_sz_thresh
+                filter_out=[filter_out,i];
+            end
         end
     end
 end
@@ -275,14 +255,25 @@ if only_center_seven
     centroid_x=centroid_x(:,closest_seven);
     centroid_y=centroid_y(:,closest_seven);
     % only keep points in the seven fields
-    heat_map2=[];
-    idx=[];
-    for i=1:fields_num
-        for j=1:size(fields_y,2)
-            if fields_y(i,j)~= 0
-                heat_map2=[heat_map2;[fields_y(i,j),fields_x(i,j)]];
-                idx=[idx;i];
-            end
+%     heat_map2=[];
+%     idx=[];
+%     for i=1:fields_num
+%         for j=1:size(fields_y,2)
+%             if fields_y(i,j)~= 0
+%                 heat_map2=[heat_map2;[fields_y(i,j),fields_x(i,j)]];
+%                 idx=[idx;i];
+%             end
+%         end
+%     end
+end
+
+heat_map2=[];
+idx=[];
+for i=1:fields_num
+    for j=1:size(fields_y,2)
+        if fields_y(i,j)~= 0
+            heat_map2=[heat_map2;[fields_y(i,j),fields_x(i,j)]];
+            idx=[idx;i];
         end
     end
 end
@@ -525,7 +516,7 @@ if plot_orig_ratemap || auto_export_plots
     set(gca,'YDir','normal')
     if minimal_plotting_mode==0
         colorbar;
-        plot_title=strcat('Original Rate Map for Cell #',string(heat_map_selection));
+        plot_title=strcat('Original Autocorrelogram for Cell #',string(heat_map_selection));
         title(plot_title);
         xlabel('animal location on x axis')
         ylabel('animal location on y axis')
@@ -534,8 +525,6 @@ if plot_orig_ratemap || auto_export_plots
     else
         plot_title=strcat('Cell #',string(heat_map_selection),' with Ratio=',string(size_space_ratio));
         title(plot_title);
-        %xlabel('animal position on x axis')
-        %ylabel('animal position on y axis')
         set(gca,'fontsize', 14);
         axis square
     end
@@ -547,7 +536,6 @@ if plot_orig_ratemap || auto_export_plots
 end
 if control_window_size && plot_fields_detected && plot_orig_ratemap nexttile; end
 if plot_fields_detected || auto_export_plots
-%     gscatter(heat_map2(:,1),heat_map2(:,2),idx);
     gscatter(heat_map2(:,2),heat_map2(:,1),idx);
     ylim([1 res]);
     xlim([1 res]);
@@ -561,7 +549,7 @@ if plot_fields_detected || auto_export_plots
         axis square
     else
         plot_title=strcat('Cell #',string(heat_map_selection),' with Ratio=',string(size_space_ratio));
-                plot_title=strcat('Cell #',string(heat_map_selection),' Field Detection Overlay');
+        %plot_title=strcat('Cell #',string(heat_map_selection),' Field Detection Overlay');
         title(plot_title);
         set(legend,'Visible','off');
         set(gca,'fontsize', 14);

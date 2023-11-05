@@ -53,7 +53,7 @@ if exist('filename_rotations_custom','var')
     filename_rotations=filename_rotations_custom;
 end
 % threshold
-nonfld_filt_perc=.26;
+nonfld_filt_perc=.31;
 if exist('saved_nonfld_filt_perc','var')
     nonfld_filt_perc=saved_nonfld_filt_perc;
 end
@@ -184,10 +184,12 @@ end
 filter_out=[];
 if use_fld_sz_thresh==1
     for i=1:fields_num
+        fprintf("processing: %d\n",i);
         non_zero=find(fields_x(i,:)~=0);
         non_zero_sz=size(non_zero,2);
-        fld_x=fields_x(non_zero);
-        fld_y=fields_y(non_zero);
+        fld_x=[];fld_y=[];
+        fld_x=fields_x(i,non_zero);
+        fld_y=fields_y(i,non_zero);
         % search for border contact
         border_w=find(fld_x<2);
         border_e=find(fld_x>(res-1));
@@ -254,14 +256,25 @@ if only_center_seven
     centroid_x=centroid_x(:,closest_seven);
     centroid_y=centroid_y(:,closest_seven);
     % only keep points in the seven fields
-    heat_map2=[];
-    idx=[];
-    for i=1:fields_num
-        for j=1:size(fields_y,2)
-            if fields_y(i,j)~= 0
-                heat_map2=[heat_map2;[fields_y(i,j),fields_x(i,j)]];
-                idx=[idx;i];
-            end
+%     heat_map2=[];
+%     idx=[];
+%     for i=1:fields_num
+%         for j=1:size(fields_y,2)
+%             if fields_y(i,j)~= 0
+%                 heat_map2=[heat_map2;[fields_y(i,j),fields_x(i,j)]];
+%                 idx=[idx;i];
+%             end
+%         end
+%     end
+end
+
+heat_map2=[];
+idx=[];
+for i=1:fields_num
+    for j=1:size(fields_y,2)
+        if fields_y(i,j)~= 0
+            heat_map2=[heat_map2;[fields_y(i,j),fields_x(i,j)]];
+            idx=[idx;i];
         end
     end
 end
@@ -504,7 +517,7 @@ if plot_orig_ratemap || auto_export_plots
     set(gca,'YDir','normal')
     if minimal_plotting_mode==0
         colorbar;
-        plot_title=strcat('Original Rate Map for Cell #',string(heat_map_selection));
+        plot_title=strcat('Original Autocorrelogram for Cell #',string(heat_map_selection));
         title(plot_title);
         xlabel('animal location on x axis')
         ylabel('animal location on y axis')
