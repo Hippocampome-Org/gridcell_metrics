@@ -1,5 +1,7 @@
 function auto_corr_rm = plot_rate_map_ac(self, cel, rate_map, xs, ys)
 % Plots the autocorrelation of the ratemap
+%
+% Copyright (c) 2014, Trustees of Boston University All rights reserved.
 
     %import CMBHOME.Utils.*
         

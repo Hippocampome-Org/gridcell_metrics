@@ -13,6 +13,8 @@ function [cbar, clims] = SmartColorbar(clims, cmap_style)
 %                   the null data points to be properly mapped to white
 %
 % andrew 3 nov 2010
+%
+% Copyright (c) 2014, Trustees of Boston University All rights reserved.
 
 eval(['cbar = ' cmap_style ';']); % initialize cbar
 

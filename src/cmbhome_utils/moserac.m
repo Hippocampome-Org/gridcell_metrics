@@ -16,6 +16,8 @@ function CC = moserac(X, X2, threshold)
 %
 % andrew august sometime 2010
 % v2 - added cross correlation support 12/25/2010
+%
+% Copyright (c) 2014, Trustees of Boston University All rights reserved.
 
 if ~exist('threshold', 'var'), threshold = 25; end
 
