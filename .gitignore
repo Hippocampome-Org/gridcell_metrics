@@ -5,7 +5,14 @@
 /*.webp
 src/heat_maps_real_new_cells
 src/heat_maps_real_new_cells/*
+src/heat_maps_real_ac_new_cells
+src/heat_maps_real_ac_new_cells/*
 plots/real_new_cells
 plots/real_new_cells/*
+plots/sim_ac
+plots/sim_ac/*
+plots/lrg_scl_comparison
+plots/lrg_scl_comparison/*
 *.xcf
-src/saved_results/*
+src/saved_results/*.txt
+src/saved_results/archive/*
