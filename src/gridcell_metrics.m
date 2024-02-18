@@ -36,10 +36,10 @@
 
 %% Parameter Options %%
 %% Required Settings %%
-px2cm=45/32; % conversion of each pixel to a centimeter lenth in an enviornment
+px2cm=100/32; % conversion of each pixel to a centimeter lenth in an enviornment
 nonfld_filt_perc=.31; % non-filtered percentage threshold
 load_plot_from_file=1; % load neural data plot from individual file (1; plot_filepath) or instead pick a file from a numbered list (0; heat_maps_list or heat_maps_ac_list)
-plot_filepath="heat_maps_real_ac/n1_ac.mat"; % path to file that contains the neural data
+plot_filepath="heat_maps_real_ac/n20_ac.mat"; % path to file that contains the neural data
 if load_plot_from_file==0
     load("heat_maps_list.mat"); small=35; medium=36; large=37; % list of rate map plots. real cell file_number 15 = small, 23 = medium, 17 = large
     load("heat_maps_ac_list.mat"); % list of autocorrelogram plots
