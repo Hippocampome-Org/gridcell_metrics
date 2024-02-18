@@ -2,12 +2,12 @@
 
 ## Related article
 <br>Some additional details and analyses run with this software can be found in this article.
-<br>Rebecca, R. G., Ascoli, G. A., Sutton, N. M., & Dannenberg, H. (2023). Spatial periodicity in grid cell firing is explained by a neural sequence code of 2D trajectories. bioRxiv. https://doi.org/10.1101/2023.05.30.542747
+<br>\[1\] R. G., R., Ascoli, G. A., Sutton, N. M., & Dannenberg, H. (2023). Spatial periodicity in grid cell firing is explained by a neural sequence code of 2D trajectories. bioRxiv. https://doi.org/10.1101/2023.05.30.542747
 
-## Requirement
+## Requirements
 <br>The DBSCAN clustering algorithm from MATLAB’s (mathworks.com) Statistics and Machine Learning Toolbox
 
-## Example Usage Instructions.
+## Example Usage Instructions
 <br>A user will need to supply either a rate map of grid cell firing in a 32x32 pixel matrix or an autocorrelogram in a 63x63 pixel matrix. The script ratemap2autocorr.m is supplied to convert a rate map matrix into an autocorrelogram matrix if that is wanted. The matrix should be stored in a .mat matlab file. In the matlab file, the matrix should be a matlab object named "heat_map" if it is a rate map and named "heat_map_ac" if it is an autocorrelogram.
 <br>
 <br>In gridcell_metrics.m, the user should enter the file path to their matrix file in the variable plot_filepath. Alternatively, a user can enter their matrix file path in the files heat_maps_list.mat or heat_maps_ac_list.mat if loading matrices from a list is preferred. The variable load_plot_from_file toggles loading a matrix from an individual file or from a list.
@@ -19,16 +19,16 @@
 <br>Statistics will be printed in the commend prompt once the program is run. These include mean field size, spacing, and angle measurements. Matching centroid number is the centroid from the detected grid field with the smallest angle to the center field. Grid fields reported is the number of grid fields included in analyses and does not take into account any manually excluded fields. Grid fields filtered out is the number of grid fields beyond the "grid fields reported" that were filtered out.
 
 ## Suggested nonfld_filt_perc thresholds
-<br>...
+<br>The threshold found have the best performance in (R. G. et al., 2023) was 31%.
 
-## General Usage:
+## General Usage
 <br>src/gridcell_metrics.m should be run in MATLAB
 
-## Required Parameters:
+## Required Parameters
 <br>heat_map_selection: select cell to analyze (cells are numbered and file locations are stored in heat_maps_list.mat and heat_maps_ac_list.mat).
 <br>nonfld_filt_perc: threshold for non-field filtering to perform. Range is 0-1.
 
-## Optional Parameters:
+## Optional Parameters
 <br>use_ac: use autocorrelogram (1) or rate map (0).
 <br>only_center_seven: filter intended for autocorrelograms where fields other than the center 7 are filtered out.
 <br>plot_fields_detected: plot fields the software detected.
