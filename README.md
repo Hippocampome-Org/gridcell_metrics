@@ -19,7 +19,7 @@
 <br>Statistics will be printed in the commend prompt once the program is run. These include mean field size, spacing, and angle measurements. Matching centroid number is the centroid from the detected grid field with the smallest angle to the center field. Grid fields reported is the number of grid fields included in analyses and does not take into account any manually excluded fields. Grid fields filtered out is the number of grid fields beyond the "grid fields reported" that were filtered out.
 
 ## Suggested nonfld_filt_perc thresholds
-<br>The threshold found have the best performance in (R. G. et al., 2023) was 31%.
+<br>The threshold found have the best performance in (R. G. et al., 2023) was 31%. Users can test different thresholds with that threshold as a suggested starting point. Smaller thresholds can detect larger field areas but are at risk of unwanted merging of fields with neighboring fields. Larger fields can better avoid that risk but detect smaller fields, and in some cases not detect fields because of the increased firing rate filtering.
 
 ## General Usage
 <br>src/gridcell_metrics.m should be run in MATLAB
@@ -31,8 +31,11 @@
 ## Optional Parameters
 <br>use_ac: use autocorrelogram (1) or rate map (0).
 <br>only_center_seven: filter intended for autocorrelograms where fields other than the center 7 are filtered out.
+
+## Plotting Parameters
 <br>plot_fields_detected: plot fields the software detected.
 <br>plot_orig_firing: plot original ratemap or autocorrelogram used as the source of data for the software.
 <br>plot_legend: include legend in plot.
-<br>
-<br>Note: this software does not generate rate maps from animal data, although some are saved in example files with the software. Additional software is needed to create rate maps. This software uses as input the data from those plots.
+
+## General Notes
+this software does not generate rate maps from animal data, although some are saved in example files with the software. Additional software is needed to create rate maps. This software uses as input the data from those plots.
