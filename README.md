@@ -43,4 +43,4 @@
 <br>plot_legend: include legend in plot.
 
 ## General Notes
-this software does not generate rate maps from animal data, although some are saved in example files with the software. Additional software is needed to create rate maps. This software uses as input the data from those plots.
+This software does not generate rate maps from animal data, although some are saved in example files with the software. Additional software is needed to create rate maps. This software uses as input the data from those plots.
