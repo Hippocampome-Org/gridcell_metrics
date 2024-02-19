@@ -5,7 +5,7 @@
 <br>\[1\] R. G., R., Ascoli, G. A., Sutton, N. M., & Dannenberg, H. (2023). Spatial periodicity in grid cell firing is explained by a neural sequence code of 2D trajectories. bioRxiv. https://doi.org/10.1101/2023.05.30.542747
 
 ## Requirements
-<br>The DBSCAN clustering algorithm from MATLAB’s (mathworks.com) Statistics and Machine Learning Toolbox
+<br>The DBSCAN clustering algorithm from MATLAB’s (mathworks.com) Statistics and Machine Learning Toolbox. A user should install that toolbox to run this software.
 
 ## Example Usage Instructions
 <br>The software has default settings included so that a user should be able to download and just run it without changing any settings to see an example of its results. A user will need to supply either a rate map of grid cell firing in a 32x32 pixel matrix or an autocorrelogram in a 63x63 pixel matrix to run the software on a user's new data. The script ratemap2autocorr.m is supplied to convert a rate map matrix into an autocorrelogram matrix if that is wanted. The matrix should be stored in a .mat matlab file. In the matlab file, the matrix should be a matlab object named "heat_map" if it is a rate map and named "heat_map_ac" if it is an autocorrelogram.
