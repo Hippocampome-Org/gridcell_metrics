@@ -353,13 +353,20 @@ for i=1:fields_num
         end
     end
 end
-hist_binwidth=5;
-angle_hist=histogram(angles,BinWidth=hist_binwidth);
-%plot(angle_hist)
-%disp(angle_hist.BinLimits)
-%length(angle_hist.Values)
-hist_vals=linspace(min(angle_hist.BinLimits),max(angle_hist.BinLimits),length(angle_hist.Values));
-hist_bins=angle_hist.Values;
+if print_angles
+    hist_binwidth=5;
+    angle_hist=histogram(angles,BinWidth=hist_binwidth);
+    %plot(angle_hist)
+    %disp(angle_hist.BinLimits)
+    %length(angle_hist.Values)
+    hist_vals=linspace(min(angle_hist.BinLimits),max(angle_hist.BinLimits),length(angle_hist.Values));
+    hist_bins=angle_hist.Values;
+    title("Histogram of Angles");
+    xlabel('Angle Between Fields')
+    ylabel('Number of Angles')
+    set(gca,'fontsize', 14);
+    axis square
+end
 
 % find smallest angle from first centroid
 cent_one_angles=[];
@@ -413,6 +420,7 @@ if print_angles
     for i=1:length(hist_sorted)
         fprintf("%.1f: %.0f; ",hist_sorted(i,1),hist_sorted(i,2));
     end
+    fprintf("\n");
 end
 %{
 fprintf("Centroids: ");
