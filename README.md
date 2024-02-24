@@ -2,7 +2,7 @@
 
 ## Related article
 <br>Some additional details and analyses run with this software can be found in this article.
-<br>\[1\] R. G., R., Ascoli, G. A., Sutton, N. M., & Dannenberg, H. (2023). Spatial periodicity in grid cell firing is explained by a neural sequence code of 2D trajectories. bioRxiv. https://doi.org/10.1101/2023.05.30.542747
+<br>\[1\] R. G., R., Ascoli, G. A., Sutton, N. M., & Dannenberg, H. (2023). Spatial periodicity in grid cell firing is explained by a neural sequence code of 2D trajectories. bioRxiv. [https://doi.org/10.1101/2023.05.30.542747](https://doi.org/10.1101/2023.05.30.542747)
 
 ## Requirements
 <br>The DBSCAN clustering algorithm from MATLAB’s (mathworks.com) Statistics and Machine Learning Toolbox. A user should install that toolbox to run this software.
