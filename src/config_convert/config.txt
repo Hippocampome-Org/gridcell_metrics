@@ -1,0 +1,37 @@
+variable_name, variable_data, notes
+output_filename, "metric_results.csv"
+px2cm, 45/32, conversion of each pixel to a centimeter lenth in an environment
+nonfld_filt_perc, .31, non-filtered percentage threshold
+load_plot_from_file, 0, load neural data plot from individual file (1 plot_filepath) or instead pick a file from a numbered list (0 heat_maps_list or heat_maps_ac_list)
+plot_filepath, "heat_maps_real_ac/n20_ac.mat"
+heat_map_selection, 3
+use_ac, 1, choose to use autocorrelogram (ac) (1) or standard rate map (0)
+use_dist_thresh, 0
+dist_thresh, 500
+use_fld_sz_thresh, 0
+fld_sz_thresh, 6
+manual_field_exclud, 0, field indices to exclude from spacing statistics
+load_px2cm_conv, 0, load saved list of pixel to centimeter distance conversions
+dbscan_epsilon, 3
+dbscan_min_pts, 1, db_scan parameters
+load_custom_rm, 0, load custom rate map saved from a file
+load_custom_ac, 0, load custom ac saved from a file
+only_center_seven, 1, filter out fields except for seven closest to the plot center
+use_tophat_filter, 0
+use_centsurr_filter, 0
+minimal_plotting_mode, 0
+auto_export_plots, 0
+filename_sizes, 'saved_results/field_size_records.txt'
+filename_spacings, 'saved_results/field_spacing_records.txt'
+filename_rotations, 'saved_results/save_field_rotation.txt'
+plot_fields_detected, 1
+plot_orig_firing, 1, plots the original firing data rate map or autocorrelogram
+plot_legend, 0 
+print_angles, 0
+control_window_size, 0
+custom, 0 
+custom2, 0 
+custom3, 0 
+custom4, 0
+sml_ang_cnt_fld, 361, smallest angle from center field. Default is 361 which is beyond 360 which could be a highest angle possible.
+sml_ang_cent_num, 0, centriod number of sml_ang_cnt_fld match
