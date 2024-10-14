@@ -50,6 +50,7 @@ size_exclud = str2double(strsplit(size_exclud,"|"));
 ang_exclud = str2double(strsplit(ang_exclud,"|"));
 
 %disp(heat_map_selection)
+disp("Please wait while results are being generated. This may take several minutes.")
 
 %% Load configuration settings %%
 %config;
