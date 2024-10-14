@@ -109,5 +109,21 @@ elseif heat_map_selection==89
     spac_exclud = [];
     size_exclud = [4,5,6,7];
     ang_exclud = [];
+elseif heat_map_selection==90
+    spac_exclud = [];
+    size_exclud = [6,7];
+    ang_exclud = [];
+elseif heat_map_selection==91
+    spac_exclud = [];
+    size_exclud = [6,7];
+    ang_exclud = [];
+elseif heat_map_selection==92
+    spac_exclud = [];
+    size_exclud = [4,5,6,7];
+    ang_exclud = [];
+elseif heat_map_selection==93
+    spac_exclud = [];
+    size_exclud = [6,7];
+    ang_exclud = [];
 end
 end

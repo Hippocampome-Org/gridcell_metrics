@@ -1,0 +1,1 @@
+smooth_rate_map.exe "input_data/spikes.csv" "saved_results/rate_map.txt" "C:\Users\natem\Documents\CompNeuro\GridcellMetrics\Neuron23\highres_pos_x.csv" "C:\Users\natem\Documents\CompNeuro\GridcellMetrics\Neuron23\highres_pos_y.csv" 1 1 1 3 3.333 1 40 31 1 50 20 1 0 1 

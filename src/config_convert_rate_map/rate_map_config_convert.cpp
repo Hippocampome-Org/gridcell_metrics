@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     string output_filename = argv[1];
     string compiled_filename = argv[2];
 
-	ifstream input_file("config.txt");
+	ifstream input_file("rate_map_config.txt");
 	FILE *output_file = fopen(output_filename.c_str(), "w");
     string str, token;
     vector<vector<string>> config;

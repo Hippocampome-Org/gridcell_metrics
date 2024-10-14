@@ -3,30 +3,6 @@
     
     Author: Nate Sutton, 2023
     
-    Required parameter:
-    - nonfld_filt_perc: percentage of lowest firing rates to remove from
-    data. This removes non-field firing.
-
-    Optional parameters:
-    - use_ac: choose to use autocorrelogram (ac) (1) or standard rate map (0)
-    - only_center_seven: filter out fields except for seven closest to the plot center
-    - dist_thresh: maximum field distance to be considered in group of
-    field distances.
-    - fld_sz_thresh: minimum field size that has contact with a border for
-    the field to avoid being filtered out.
-    - manual_field_exclud: field indices to exclude from spacing
-    statistics.
-    - load_px2cm_conv: load saved list of pixel to centimeter distance
-    conversions.
-    - spac_exclud; size_exclud; ang_exclud: specify any fields to exclude 
-    from size, spacing, or angle statistics.
-    dbscan_epsilon; dbscan_min_pts: db_scan parameters
-
-    Plotting:
-    - plot_fields_detected: plot the detected fields.
-    - plot_orig_firing: plot the rate map or autocorrelogram used as neural
-    data input.
-    
     references: https://www.mathworks.com/help/stats/dbscan.html
     https://www.mathworks.com/matlabcentral/answers/501948-how-to-automatically-find-the-angle-from-2-points
     https://www.mathworks.com/matlabcentral/answers/629408-how-to-use-convolution-on-a-2d-matrix-with-a-kernel
@@ -34,63 +10,103 @@
     https://gamedev.stackexchange.com/questions/4467/comparing-angles-and-working-out-the-difference
 %}
 
-%% Parameter Options %%
-%% Required Settings %%
-px2cm=100/32; % conversion of each pixel to a centimeter lenth in an enviornment
-nonfld_filt_perc=.31; % non-filtered percentage threshold
-load_plot_from_file=1; % load neural data plot from individual file (1; plot_filepath) or instead pick a file from a numbered list (0; heat_maps_list or heat_maps_ac_list)
-plot_filepath="heat_maps_real_ac/n20_ac.mat"; % path to file that contains the neural data
-if load_plot_from_file==0
-    load("heat_maps_list.mat"); small=35; medium=36; large=37; % list of rate map plots. real cell file_number 15 = small, 23 = medium, 17 = large
-    load("heat_maps_ac_list.mat"); % list of autocorrelogram plots
-    heat_map_selection=89; % pick plot number from the supplied list
-end
-%% Optional Settings %%
-use_ac=1; % choose to use autocorrelogram (ac) (1) or standard rate map (0)
-use_dist_thresh=0;
-dist_thresh=500;
-use_fld_sz_thresh=0;
-fld_sz_thresh=6;
-spac_exclud = []; size_exclud = []; ang_exclud = []; % specify any fields to exclude from statistics
-manual_field_exclud = 1; % field indices to exclude from spacing statistics
-if manual_field_exclud==1 excluded_fields; end
-load_px2cm_conv = 1; % load saved list of pixel to centimeter distance conversions
+function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,spac_exclud,size_exclud,ang_exclud)
+
+px2cm = str2num(px2cm);
+nonfld_filt_perc = str2num(nonfld_filt_perc);
+load_plot_from_file = str2num(load_plot_from_file);
+use_binary_input = str2num(use_binary_input);
+heat_map_selection = str2num(heat_map_selection);
+use_ac = str2num(use_ac);
+convert_to_ac = str2num(convert_to_ac);
+use_dist_thresh = str2num(use_dist_thresh);
+dist_thresh = str2num(dist_thresh);
+use_fld_sz_thresh = str2num(use_fld_sz_thresh);
+fld_sz_thresh = str2num(fld_sz_thresh);
+manual_field_exclud = str2num(manual_field_exclud);
+load_px2cm_conv = str2num(load_px2cm_conv);
+dbscan_epsilon = str2num(dbscan_epsilon);
+dbscan_min_pts = str2num(dbscan_min_pts);
+load_custom_rm = str2num(load_custom_rm);
+load_custom_ac = str2num(load_custom_ac);
+only_center_seven = str2num(only_center_seven);
+use_tophat_filter = str2num(use_tophat_filter);
+use_centsurr_filter = str2num(use_centsurr_filter);
+minimal_plotting_mode = str2num(minimal_plotting_mode);
+auto_export_plots = str2num(auto_export_plots);
+plot_fields_detected = str2num(plot_fields_detected);
+plot_orig_firing = str2num(plot_orig_firing);
+plot_legend = str2num(plot_legend);
+print_angles = str2num(print_angles);
+control_window_size = str2num(control_window_size);
+custom = str2num(custom);
+custom2 = str2num(custom2);
+custom3 = str2num(custom3);
+custom4 = str2num(custom4);
+sml_ang_cnt_fld = str2num(sml_ang_cnt_fld);
+sml_ang_cent_num = str2num(sml_ang_cent_num);
+spac_exclud = str2double(strsplit(spac_exclud,"|"));
+size_exclud = str2double(strsplit(size_exclud,"|"));
+ang_exclud = str2double(strsplit(ang_exclud,"|"));
+
+%disp(heat_map_selection)
+
+%% Load configuration settings %%
+%config;
+% config_filename = "config.txt";
+% spac_exclud = []; size_exclud = []; ang_exclud = []; % specify any fields to exclude from statistics
+% config_file = fopen(config_filename);
+% config_vars = textscan(config_file,'%s',3,'Delimiter','|');
+% config_data = textscan(config_file,'%s %s %s',37,'Delimiter',',');
+% fclose(config_file);
+% for i=1:length(config_data{1})
+%     var_name = string(config_data{1}(i));        
+%     var_data = string(config_data{2}(i));
+%     command = sprintf("%s = %s;",var_name,var_data);
+%     eval(command);
+% end
+%%%
+load("heat_maps_list.mat"); small=35; medium=36; large=37; % list of rate map plots. real cell file_number 15 = small, 23 = medium, 17 = large
+load("heat_maps_ac_list.mat"); % list of autocorrelogram plots
 if load_px2cm_conv==1 saved_px2cm_conv; end
-dbscan_epsilon=3; dbscan_min_pts=1; % db_scan parameters
-load_custom_rm=0; % load custom rate map saved from a file
-load_custom_ac=0; % load custom ac saved from a file
-only_center_seven=1; % filter out fields except for seven closest to the plot center
-use_tophat_filter=0;
-use_centsurr_filter=0;
 if exist('heat_map_selection_custom','var') heat_map_selection=heat_map_selection_custom; end
 if use_ac == 0 only_center_seven=0; end
-minimal_plotting_mode=0;
 if exist('minimal_plotting_mode_custom','var') minimal_plotting_mode=minimal_plotting_mode_custom; end
-auto_export_plots=0;
 if exist('auto_export_plots_custom','var') auto_export_plots=auto_export_plots_custom; end
-filename_sizes='saved_results/field_size_records.txt';
 if exist('filename_sizes_custom','var') filename_sizes=filename_sizes_custom; end
-filename_spacings='saved_results/field_spacing_records.txt';
 if exist('filename_spacings_custom','var') filename_spacings=filename_spacings_custom; end
-filename_rotations='saved_results/save_field_rotation.txt';
 if exist('filename_rotations_custom','var') filename_rotations=filename_rotations_custom; end
 if exist('saved_nonfld_filt_perc','var') nonfld_filt_perc=saved_nonfld_filt_perc; end
-% ac_xaxis_dim=63; % commented out because this may no longer be used. for custom ac, use this x-axis length. This is the length in pixels of the x- and y-axes of the autocorrelogram plot
-%% Plotting Settings %%
-plot_fields_detected=1;
-plot_orig_firing=1; % plots the original firing data's rate map or autocorrelogram
 if exist('plot_fields_detected_custom','var') plot_fields_detected=plot_fields_detected_custom; end
 if exist('plot_orig_firing_custom','var') plot_orig_firing=plot_orig_firing_custom; end
-plot_legend=0; print_angles=0;
-control_window_size=0;
-custom=0; custom2=0; custom3=0; custom4=0;
 if custom load_custom_rm=1; plot_orig_firing=0; end
 if custom2 load_custom_ac=1; plot_orig_firing=0; end
 if custom3 load_custom_rm=1; use_ac=0; only_center_seven=0; end
 if custom4 load_custom_rm=0; use_ac=1; only_center_seven=1; end
-sml_ang_cnt_fld = 361; % smallest angle from center field. Default is 361 which is beyond 360 which could be a highest angle possible.
-sml_ang_cent_num = 0; % centriod number of sml_ang_cnt_fld match
-%%%%%%%%%%%%%%%%%%%%%%
+%%%
+
+if manual_field_exclud==1
+    excluded_fields_filename = sprintf("excluded_fields/heatmap_%d.txt", heat_map_selection);
+    excluded_fields_file = fopen(excluded_fields_filename);
+    excluded_fields_vars = textscan(excluded_fields_file,'%s',3,'Delimiter','|');
+    excluded_fields_data = textscan(excluded_fields_file,'%d %d %d');
+    fclose(excluded_fields_file);
+    for i=1:length(excluded_fields_vars{1})
+        var_data = "[";
+        for j=1:length(excluded_fields_data{i})
+            var_data = sprintf("%s%s",var_data,string(excluded_fields_data{i}(j)));
+            if j == (length(excluded_fields_data{i})-1)
+                var_data = sprintf("%s,",var_data);
+            else
+                var_data = sprintf("%s]",var_data);
+            end
+        end
+        var_name=string(excluded_fields_vars{1}(i));
+        command = sprintf("%s = %s;",var_name,var_data);
+        eval(command);
+    end
+    %excluded_fields; 
+end
 
 %% Load Neural Data %%
 if plot_fields_detected && plot_orig_firing control_window_size=1; end
@@ -112,8 +128,22 @@ if load_custom_rm
     heat_map=heat_map_custom;
 end
 if load_plot_from_file == 1
-    load(plot_filepath);
+    if use_binary_input == 0
+        heat_map=readmatrix(plot_filepath);
+    else if use_binary_input == 1
+        load(plot_filepath);
+    end
     if exist('heat_map_ac','var') heat_map=heat_map_ac; end
+end
+if use_ac 
+    if exist('heat_map_ac','var') 
+        heat_map=heat_map_ac; 
+    end 
+end
+if convert_to_ac
+    use_ac = 1;
+    heat_map_ac = moserac(heat_map);
+    heat_map=heat_map_ac;
 end
 if use_ac && load_plot_from_file==0
     load(heat_maps_ac_list(heat_map_selection));
@@ -121,7 +151,7 @@ if use_ac && load_plot_from_file==0
 end
 if load_custom_ac
     load("heat_maps_ac_custom_list.mat");
-    load(heat_maps_ac_custom_list(heat_map_selection));
+    load(heat_maps_ac_custom_list(str2num(heat_map_selection)));
     heat_map=heat_map_custom;
 end
 if exist('use_newly_generated_ac','var')
@@ -390,26 +420,55 @@ for i=1:fields_num
     end
 end
 
+output_file = fopen(output_filename,'w');
 mean_field_sizes=sum(field_sizes)/size(field_sizes,2);
 %median_field_sizes=median(field_sizes);
 mean_field_dists=sum(field_distances)/size(field_distances,2);
 %median_field_dists=median(field_distances);
-fprintf("Mean field sizes (area): %.2f, mean size in cm: %.2f cm\n",mean_field_sizes,mean_field_sizes*px2cm);
+output_string = sprintf("metric,value\nmean_field_sizes,%.2f\nmean_field_sizes_px2cm,%.2f\n",mean_field_sizes,mean_field_sizes*px2cm);
+fprintf(output_file,output_string);
+output_string = sprintf("Mean field sizes (area): %.2f; mean size in cm: %.2f cm\n",mean_field_sizes,mean_field_sizes*px2cm);
+fprintf(output_string);
 %fprintf("Median field sizes (area): %.2f\n",median_field_sizes);
-fprintf("Mean field distances: %.2f, mean distance in cm: %.2f cm\n",mean_field_dists,mean_field_dists*px2cm);
+output_string = sprintf("mean_field_dists,%.2f\nmean_field_dists_px2cm,%.2f\n",mean_field_dists,mean_field_dists*px2cm);
+fprintf(output_file,output_string);
+output_string = sprintf("Mean field distances: %.2f; mean distance in cm: %.2f cm\n",mean_field_dists,mean_field_dists*px2cm);
+fprintf(output_string);
 %fprintf("Median field distances: %.2f\n",median_field_dists);
 %fprintf("Minimum angle: %.2f\n",min(angles));
-fprintf("Minimum angle: %.2f; Matching centroid number: %d\n",sml_ang_cnt_fld,sml_ang_cent_num);
-if only_center_seven && fld_cnt~=7 fprintf("Incorrect field count for only seven fields filter.\n"); end
-fprintf("Grid fields reported: %d\n",fields_num);
-if only_center_seven
-    fprintf("Grid fields filtered out: %d\n",filter_out);
-else
-    fprintf("Grid fields filtered out: %d\n",size(filter_out,2));
+output_string = sprintf("minimum angle,%.2f\nmatching_centroid_number,%d\n",sml_ang_cnt_fld,sml_ang_cent_num);
+fprintf(output_file,output_string);
+output_string = sprintf("Minimum angle: %.2f; Matching centroid number: %d\n",sml_ang_cnt_fld,sml_ang_cent_num);
+fprintf(output_string);
+if only_center_seven && fld_cnt~=7 
+    output_string = sprintf("Error: incorrect field count for only seven fields filter.\n");
+    fprintf(output_file,output_string); fprintf(output_string); 
 end
+output_string = sprintf("grid_fields_reported,%d\n",fields_num);
+fprintf(output_file,output_string); 
+output_string = sprintf("Grid fields reported: %d; ",fields_num);
+fprintf(output_string);
+if only_center_seven
+    output_string = sprintf("grid_fields_filtered_out,%d\n",filter_out);
+    fprintf(output_file,output_string); 
+    output_string = sprintf("Grid fields filtered out: %d\n",filter_out);
+    fprintf(output_string);
+else
+    output_string = sprintf("grid_fields_filtered_out,%d\n",size(filter_out,2));
+    fprintf(output_file,output_string); 
+    output_string = sprintf("Grid fields filtered out: %d\n",size(filter_out,2));
+    fprintf(output_string);
+end
+%size_space_ratio=(mean_field_dists/((mean_field_sizes/3.14)^0.5)/2);
+size_space_ratio=(mean_field_dists/(((mean_field_sizes/3.14)^0.5)*2));
+output_string = sprintf("size_space_ratio,%.4f\n",size_space_ratio);
+fprintf(output_file,output_string);
+output_string = sprintf("Spacing and Size Ratio: %.2f\n",size_space_ratio);
+fprintf(output_string);
 %fprintf("Grid scale score: %.2f\n",mean_field_sizes*mean_field_dists);
-if print_angles
-    fprintf("Frequency of angles: ");
+if print_angles 
+    output_string = sprintf("Frequency of angles: ");
+    fprintf(output_string);
     hist_sorted=[];
     for i=1:length(hist_vals)
         if hist_bins(i)~=0
@@ -418,7 +477,10 @@ if print_angles
     end
     hist_sorted=sortrows(hist_sorted,2,'descend');
     for i=1:length(hist_sorted)
-        fprintf("%.1f: %.0f; ",hist_sorted(i,1),hist_sorted(i,2));
+        output_string = sprintf("frequency_of_angle,%.1f,%.0f\n; ",hist_sorted(i,1),hist_sorted(i,2));
+        fprintf(output_file,output_string); 
+        output_string = sprintf("%.1f: %.0f; ",hist_sorted(i,1),hist_sorted(i,2));
+        fprintf(output_string);
     end
     fprintf("\n");
 end
@@ -440,6 +502,7 @@ a=find_angle(centroid_x(c1),centroid_y(c1),centroid_x(c2),centroid_y(c2));
 fprintf("centroid %d to %d: %.2f",c1,c2,a);
 %}
 %fprintf("\n");
+fclose(output_file);
 
 % save scores
 if exist('save_field_size','var')
@@ -493,7 +556,6 @@ if exist('save_field_rotation','var')
 end
 
 % plotting
-size_space_ratio=(mean_field_dists/((mean_field_sizes/3.14)^0.5)/2);
 if control_window_size
     if plot_fields_detected && plot_orig_firing
         f = figure;
@@ -540,9 +602,9 @@ if plot_orig_firing || auto_export_plots
     if auto_export_plots==1
         ax = gca;
         if load_plot_from_file == 0
-            plot_filename=strcat('../../../../holger_gridcell_theory/plots/auto_export/n',string(heat_map_selection),'_t',string(nonfld_filt_perc*100),'_rm.png');
+            plot_filename=strcat('auto_export/n',string(heat_map_selection),'_t',string(nonfld_filt_perc*100),'_rm.png');
         else
-            plot_filename=strcat('../../../../holger_gridcell_theory/plots/auto_export/cell_t',string(nonfld_filt_perc*100),'_rm.png');
+            plot_filename=strcat('auto_export/cell_t',string(nonfld_filt_perc*100),'_rm.png');
         end
         exportgraphics(ax,plot_filename,'Resolution',300) 
     end
@@ -579,9 +641,9 @@ if plot_fields_detected || auto_export_plots
     if auto_export_plots==1
         ax = gca;
         if load_plot_from_file == 0
-            plot_filename=strcat('../../../../holger_gridcell_theory/plots/auto_export/n',string(heat_map_selection),'_t',string(nonfld_filt_perc*100),'_fd.png');
+            plot_filename=strcat('auto_export/n',string(heat_map_selection),'_t',string(nonfld_filt_perc*100),'_fd.png');
         else
-            plot_filename=strcat('../../../../holger_gridcell_theory/plots/auto_export/cell_t',string(nonfld_filt_perc*100),'_fd.png');
+            plot_filename=strcat('auto_export/cell_t',string(nonfld_filt_perc*100),'_fd.png');
         end
         exportgraphics(ax,plot_filename,'Resolution',300) 
     end
@@ -592,65 +654,6 @@ if plot_legend==0 && (plot_fields_detected==1 || plot_orig_firing==1)
     end
 end
 
-function d=euc_d(x1,y1,x2,y2)
-    d=sqrt((x2-x1)^2+(y2-y1)^2); % euclidean distance
-end
+exitcode = 0;
 
-function a=find_angle(y2,y1,x2,x1)
-    %a=atand(abs(y2-y1)/abs(x2-x1)); % angle in degrees
-    a=atan2(y2 - y1, x2 - x1) * 180 / pi; % angle in degrees
-end
-
-function [filtered] = basic_convolution(image,kernel) 
-    dimensions = size(image); 
-    dimensions2 = size(kernel); 
- 
-    % define kernel center indices 
-    kernelCenter_x = floor(dimensions2(1)/2); 
-    kernelCenter_y = floor(dimensions2(2)/2); 
- 
-    image2 = zeros(dimensions(1),dimensions(2)); 
-    for i = 1:dimensions(1) 
-        for j = 1:dimensions(2) 
-            for k = 1:dimensions2(1) 
-                for l = 1:dimensions2(2) 
-                    % New changes are added below 
-                    ii = i+(k-kernelCenter_x); 
-                    jj = j+(l-kernelCenter_y);  
-                    if (ii >= 1 && ii <= dimensions(1) && jj >= 1 && jj <= dimensions(2)) 
-                        %fprintf("i:%d j:%d ii:%d jj:%d k:%d l:%d\n",i,j,ii,jj,k,l);
-                        image2(i,j) = image2(i,j) + image(ii,jj)* kernel(k,l); 
-                    end 
-                end 
-            end 
-        end   
-    filtered = image2; 
-    end 
-end
-
-function a=adjust_angle(a)
-    %{
-        Adjust angle to accomidate minimal angle measurement methods
-        This reports a minimal angle that is not specific to the vertical
-        or horizontal axis.
-    %}
-
-    if a > 45 && a <= 90
-        a = 90 - a;
-    elseif a > 90 && a <= 135
-        a = a - 90;
-    elseif a > 135 && a <= 180
-        a = 180 - a;
-    elseif a < -135 && a >= -180
-        a = a * -1;
-        a = 180 - a;
-    elseif a < -90 && a >= -135
-        a = a * -1;
-        a = a - 90;
-    elseif a < -45 && a >= -90
-        a = a * -1;
-        a = 90 - a;
-    elseif a < 0 && a >= -45
-        a = a * -1;
-    end
 end

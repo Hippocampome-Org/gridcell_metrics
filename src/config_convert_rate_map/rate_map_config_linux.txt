@@ -1,0 +1,19 @@
+variable_name, variable_data, notes
+spikes_file, "input_data/spikes.csv"
+output_file, "saved_results/rate_map.txt"
+Xs_file, "/media/nmsutton/StorageDrive/comp_neuro/gmu/research/simulation/backup/firing_rates_analyses/med_fields_med_fr/build_dir/spikes/highres_pos_x.csv"
+Ys_file, "/media/nmsutton/StorageDrive/comp_neuro/gmu/research/simulation/backup/firing_rates_analyses/med_fields_med_fr/build_dir/spikes/highres_pos_y.csv"
+occupancy_norm, 1, perform occupancy normalization. this adjusts rates by number of visits to locations.
+omit_islands, 1, see later comments
+omit_noocc, 1, set no occupancy to zero
+binside, 3
+std_smooth_kernel, 3.333
+plot_subsect, 1
+grid_size, 40
+plot_size, 31
+plot_spikes, 1
+fs_video, 50, sampling rate from video (samples/sec)
+timestep, 20, recordings timestep of samples in ms
+use_smoothing, 1
+show_plot, 0
+save_file, 1

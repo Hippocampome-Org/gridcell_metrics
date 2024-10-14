@@ -1,0 +1,2 @@
+del rate_map_config_convert.exe
+g++ -static -static-libstdc++ -static-libgcc -o rate_map_config_convert rate_map_config_convert.cpp && rate_map_config_convert.exe ../run_rate_map_smooth.bat smooth_rate_map.exe
