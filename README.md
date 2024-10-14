@@ -2,7 +2,7 @@
 
 ## Related article
 <br>Some additional details and analyses run with this software can be found in this article.
-<br>\[1\] R. G., R., Ascoli, G. A., Sutton, N. M., & Dannenberg, H. (2023). Spatial periodicity in grid cell firing is explained by a neural sequence code of 2D trajectories. bioRxiv. [https://doi.org/10.1101/2023.05.30.542747](https://doi.org/10.1101/2023.05.30.542747)
+<br>\[1\] R. G., R., Ascoli, G. A., Sutton, N. M., & Dannenberg, H. (2024). Spatial periodicity in grid cell firing is explained by a neural sequence code of 2-D trajectories. eLife, 13. [https://doi.org/10.7554/eLife.96627.1](https://doi.org/10.7554/eLife.96627.1)
 
 ## Requirements
 <br>The DBSCAN clustering algorithm from MATLAB’s (mathworks.com) Statistics and Machine Learning Toolbox. A user should install that toolbox to run this software.
@@ -11,7 +11,7 @@
 <br>See [instructions](https://hco-dev-docs.readthedocs.io/en/latest/gridcell_metrics/usage_instruct.html) for further details
 
 ## General Usage
-<br>src/gridcell_metrics.m should be run in MATLAB
+<br>src/run_gridcell_metrics.m should be run in MATLAB for running the software from source code. run_gridcell_metrics_with_config.bat (Windows) or run_gridcell_metrics_with_config.sh (Linux) should be used to run the runtime versions of this software. The runtime versions of this software are available in the releases section of Github.
 
 ## Additional Info.
 <br>See the [documentation](https://hco-dev-docs.readthedocs.io/en/latest/gridcell_metrics/overview.html) site for further info.
