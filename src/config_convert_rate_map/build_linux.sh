@@ -1,1 +1,1 @@
-rm ./rate_map_config_convert & g++ -static -static-libstdc++ -static-libgcc -o rate_map_config_convert ./rate_map_config_convert.cpp && ./rate_map_config_convert ../run_rate_map_smooth.sh smooth_rate_map
+rm ./rate_map_config_convert & g++ -static -static-libstdc++ -static-libgcc -o rate_map_config_convert ./rate_map_config_convert.cpp && ./rate_map_config_convert ../run_rate_map_smooth.sh ./smooth_rate_map

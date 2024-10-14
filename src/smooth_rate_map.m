@@ -17,6 +17,7 @@ function smooth_rate_map(spikes_file, output_file, Xs_file, Ys_file, occupancy_n
 % use_smoothing=1;
 % show_plot=0;
 % save_file=1;
+disp("Please wait while results are being generated. This may take several minutes.");
 spikes = readmatrix(spikes_file);
 x = readmatrix(Xs_file);
 y = readmatrix(Ys_file);
