@@ -10,7 +10,7 @@
     https://gamedev.stackexchange.com/questions/4467/comparing-angles-and-working-out-the-difference
 %}
 
-function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,spac_exclud,size_exclud,ang_exclud)
+function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,advanced_detection,advanced_detection_maxdist,advanced_detection_ang_inc,spac_exclud,size_exclud,ang_exclud)
 
 px2cm = str2num(px2cm);
 nonfld_filt_perc = str2num(nonfld_filt_perc);
@@ -45,6 +45,9 @@ custom3 = str2num(custom3);
 custom4 = str2num(custom4);
 sml_ang_cnt_fld = str2num(sml_ang_cnt_fld);
 sml_ang_cent_num = str2num(sml_ang_cent_num);
+advanced_detection = str2num(advanced_detection);
+advanced_detection_maxdist = str2num(advanced_detection_maxdist); % max distance to test
+advanced_detection_ang_inc = str2num(advanced_detection_ang_inc); % angle to increment
 spac_exclud = str2double(strsplit(spac_exclud,"|"));
 size_exclud = str2double(strsplit(size_exclud,"|"));
 ang_exclud = str2double(strsplit(ang_exclud,"|"));
@@ -169,6 +172,7 @@ if load_custom_ac==0
     heat_map = heat_map * 1/peak;
     
     % filter non-fields
+    heat_map_nonfilt = heat_map;
     heat_map(find(heat_map<nonfld_filt_perc))=0.0;
 
     % create filtered heat map for saving to a file
@@ -324,6 +328,7 @@ if only_center_seven
 %     end
 end
 
+% store field points for plotting
 heat_map2=[];
 idx=[];
 for i=1:fields_num
@@ -335,8 +340,6 @@ for i=1:fields_num
     end
 end
 
-% find field spacing
-field_distances=[];
 % find most center field
 center_field_idx=1; % center field index
 center_x=size(heat_map,1)/2;
@@ -350,6 +353,169 @@ for i=1:fields_num
     end
 end
 
+% advanced and localized detection of fields
+if advanced_detection == 1
+    test=[];
+    centroid_fr = []; % centroid firing rates
+    fields_x = [];
+    fields_y = [];
+    % find firing rates of centroids
+    for i=1:length(centroid_x)
+        centroid_fr = [centroid_fr,heat_map_nonfilt(round(centroid_y(i)),round(centroid_x(i)))];
+        %fprintf("x: %d; y: %d; r: %f\n",round(centroid_x(i)),round(centroid_y(i)),centroid_fr(i));
+    end
+    % detect boundary area of fields. scan 360 degrees at 5 degree increments. check firing rate
+    % starting at center in degree direction using 1 pixel x and y increments. furthest distance
+    % is set to advanced_detection_maxdist
+    x_inside = []; % x point inside boundary
+    y_inside = []; % y point inside boundary
+    y_max = size(heat_map_nonfilt,1);
+    x_max = size(heat_map_nonfilt,2);
+    for ci=1:size(centroid_x,2)
+        xc = centroid_x(ci); % center x
+        yc = centroid_y(ci); % center y
+        x_inside_temp = []; % x point inside boundary
+        y_inside_temp = []; % y point inside boundary
+        for a=0:advanced_detection_ang_inc:360
+            x_prior = xc;
+            y_prior = yc;
+            boundary_found = false;
+            for h=0:advanced_detection_maxdist
+                [x_scan,y_scan]=find_ver_hor(a, h);
+                x_scan = round(x_scan + xc);
+                y_scan = round(y_scan + yc);
+                if x_scan > x_max x_scan = y_max; end
+                if y_scan > y_max y_scan = y_max; end
+                if x_scan < 1 x_scan = 1; end
+                if y_scan < 1 y_scan = 1; end
+                fr_scan = heat_map_nonfilt(y_scan,x_scan);
+                if fr_scan < (centroid_fr * nonfld_filt_perc)
+                    if boundary_found == false
+                        x_inside_temp = [x_inside_temp,x_prior];
+                        y_inside_temp = [y_inside_temp,y_prior];
+                        boundary_found = true;
+                    end
+                end
+                x_prior = x_scan;
+                y_prior = y_scan;
+            end
+        end
+        % fill in field area based on borders
+        % scan on y-axis
+        y_boundary_max = max(y_inside_temp);
+        y_boundary_min = min(y_inside_temp);
+        x_inside_temp2 = [];
+        y_inside_temp2 = [];
+        for by=y_boundary_min:y_boundary_max
+            test_indices = find(y_inside_temp==by);
+            min_v = min(x_inside_temp(test_indices));
+            max_v = max(x_inside_temp(test_indices));
+            for bx=min_v:max_v
+                x_inside_temp2 = [x_inside_temp2, bx];
+                y_inside_temp2 = [y_inside_temp2, by];
+                x_inside = [x_inside, bx];
+                y_inside = [y_inside, by];
+            end
+        end
+        % scan on x-axis
+        x_boundary_max = max(x_inside_temp);
+        x_boundary_min = min(x_inside_temp);
+        for bx=x_boundary_min:x_boundary_max
+            test_indices = find(x_inside_temp==bx);
+            min_v = min(y_inside_temp(test_indices));
+            max_v = max(y_inside_temp(test_indices));
+            for by=min_v:max_v
+                x_inside_temp2 = [x_inside_temp2, bx];
+                y_inside_temp2 = [y_inside_temp2, by];
+                x_inside = [x_inside, bx];
+                y_inside = [y_inside, by];
+            end
+        end
+        % remove duplicates
+        x_inside_temp3 = [];
+        y_inside_temp3 = [];
+        for di=1:length(x_inside_temp2)
+            x1 = x_inside_temp2(di); y1 = y_inside_temp2(di);
+            match_counter = 0;
+            duplicate_found = false;
+            for di2=1:length(x_inside_temp3)
+                x2 = x_inside_temp3(di2); y2 = y_inside_temp3(di2);
+                if x1 == x2 && y1 == y2
+                    match_counter = match_counter + 1;
+                end
+                if match_counter > 0
+                    duplicate_found = true;
+                end
+            end
+            if duplicate_found == false
+                x_inside_temp3 = [x_inside_temp3, x_inside_temp2(di)];
+                y_inside_temp3 = [y_inside_temp3, y_inside_temp2(di)];
+            end
+        end
+        % x_inside_temp3 = x_inside_temp;
+        % y_inside_temp3 = y_inside_temp;
+        for ii=1:length(x_inside_temp3)
+            fields_x(ci,ii) = x_inside_temp3(ii);
+            fields_y(ci,ii) = y_inside_temp3(ii);
+            if ci == 1
+                test = [test; x_inside_temp3(ii),y_inside_temp3(ii)];
+            end
+        end
+    end
+
+    % store field points for plotting
+    heat_map2=[];
+    idx=[];
+    for i=1:fields_num
+        for j=1:size(fields_y,2)
+            if fields_y(i,j)~= 0
+                heat_map2=[heat_map2;[fields_y(i,j),fields_x(i,j)]];
+                idx=[idx;i];
+            end
+        end
+    end
+
+    % filter out non-field area
+    heat_map=zeros(size(heat_map_nonfilt,1));
+    for i=1:size(x_inside,2)
+            xi = x_inside(i);
+            yi = y_inside(i);
+            heat_map(yi,xi)=heat_map_nonfilt(yi,xi);
+        end
+    end
+
+    % create filtered heat map for saving to a file
+    heat_map_custom=heat_map;
+    heat_map_custom(find(heat_map_custom>0))=1.1111;
+    heat_map_custom(find(heat_map_custom<0))=0;
+    heat_map=heat_map_custom;
+
+    % update values
+    fields_num=max(idx);
+    points_per_field = histcounts(idx);
+    most_points=max(points_per_field);
+
+    % update centroids
+    centroid_x=[];
+    centroid_y=[];
+    for i=1:fields_num
+        sum_x=0;
+        sum_y=0;
+        pnt_ctr=0;
+        for j=1:most_points
+            if fields_x(i,j)~=0
+                sum_x=sum_x+fields_x(i,j);
+                sum_y=sum_y+fields_y(i,j);
+                pnt_ctr=pnt_ctr+1;
+            end
+        end
+        centroid_x=[centroid_x,sum_x/pnt_ctr];
+        centroid_y=[centroid_y,sum_y/pnt_ctr];
+    end
+end
+
+% find field spacing
+field_distances=[];
 % find distance from center field
 for i=1:fields_num
     field_dist=euc_d(centroid_x(center_field_idx),centroid_y(center_field_idx),centroid_x(i),centroid_y(i));

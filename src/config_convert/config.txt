@@ -37,6 +37,9 @@ custom3, 0, group of custom configuration settings
 custom4, 0, group of custom configuration settings
 sml_ang_cnt_fld, 361, smallest angle from center field. Default is 361 which is beyond 360 which could be a highest angle possible.
 sml_ang_cent_num, 0, centriod number of sml_ang_cnt_fld match
-spac_exclud, "2|3|6|7", grid feilds to exclude from field spacing statistics. format should be "1|2|3" that is delimited by "|". No exclusion should be described as "[]". 
-size_exclud, "2|3|4|5|6|7", grid feilds to exclude from field sizes statistics
+advanced_detection, 1, enable (1) or disable (0) advanced field detection
+advanced_detection_maxdist, 20, maximum advanced detection distance to test
+advanced_detection_ang_inc, 2, angle to increment radar scan in advanced grid field detection
+spac_exclud, "[]", grid feilds to exclude from field spacing statistics. format should be "1|2|3" that is delimited by "|". No exclusion should be described as "[]". 
+size_exclud, "[]", grid feilds to exclude from field sizes statistics
 ang_exclud, "[]", grid feilds to exclude from field angles statistics
