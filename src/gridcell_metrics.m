@@ -8,9 +8,10 @@
     https://www.mathworks.com/matlabcentral/answers/629408-how-to-use-convolution-on-a-2d-matrix-with-a-kernel
     http://agamtyagi.blogspot.com/2013/02/matlab-code-for-famous-mexican-hat.html
     https://gamedev.stackexchange.com/questions/4467/comparing-angles-and-working-out-the-difference
+    https://stackoverflow.com/questions/12801400/find-the-center-of-mass-of-points
 %}
 
-function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,advanced_detection,advanced_detection_maxdist,advanced_detection_ang_inc,spac_exclud,size_exclud,ang_exclud)
+function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,advanced_detection,advanced_detection_maxdist,advanced_detection_ang_inc,com_centroids,in_out_fields_ratio,field_frs_std,spac_exclud,size_exclud,ang_exclud)
 
 px2cm = str2num(px2cm);
 nonfld_filt_perc = str2num(nonfld_filt_perc);
@@ -48,6 +49,10 @@ sml_ang_cent_num = str2num(sml_ang_cent_num);
 advanced_detection = str2num(advanced_detection);
 advanced_detection_maxdist = str2num(advanced_detection_maxdist); % max distance to test
 advanced_detection_ang_inc = str2num(advanced_detection_ang_inc); % angle to increment
+com_centroids = str2num(com_centroids); % use center of mass to find centroids
+in_out_fields_ratio = str2num(in_out_fields_ratio); % find ratio of firing intensity within fields compared to outside of them
+field_frs_std = str2num(field_frs_std); % report standard deviation of mean firing rates between fields
+report_gridscore = 1;
 spac_exclud = str2double(strsplit(spac_exclud,"|"));
 size_exclud = str2double(strsplit(size_exclud,"|"));
 ang_exclud = str2double(strsplit(ang_exclud,"|"));
@@ -273,22 +278,7 @@ fields_x=fields_x2;
 fields_y=fields_y2;
 
 % find centroids
-centroid_x=[];
-centroid_y=[];
-for i=1:fields_num
-    sum_x=0;
-    sum_y=0;
-    pnt_ctr=0;
-    for j=1:most_points
-        if fields_x(i,j)~=0
-            sum_x=sum_x+fields_x(i,j);
-            sum_y=sum_y+fields_y(i,j);
-            pnt_ctr=pnt_ctr+1;
-        end
-    end
-    centroid_x=[centroid_x,sum_x/pnt_ctr];
-    centroid_y=[centroid_y,sum_y/pnt_ctr];
-end
+[centroid_x, centroid_y]=find_centroids(com_centroids, fields_num, most_points, fields_x, fields_y, heat_map_orig);
 
 % optional filter to only keep 7 fields closest to the center
 closest_seven=[];
@@ -496,22 +486,7 @@ if advanced_detection == 1
     most_points=max(points_per_field);
 
     % update centroids
-    centroid_x=[];
-    centroid_y=[];
-    for i=1:fields_num
-        sum_x=0;
-        sum_y=0;
-        pnt_ctr=0;
-        for j=1:most_points
-            if fields_x(i,j)~=0
-                sum_x=sum_x+fields_x(i,j);
-                sum_y=sum_y+fields_y(i,j);
-                pnt_ctr=pnt_ctr+1;
-            end
-        end
-        centroid_x=[centroid_x,sum_x/pnt_ctr];
-        centroid_y=[centroid_y,sum_y/pnt_ctr];
-    end
+    [centroid_x, centroid_y]=find_centroids(com_centroids, fields_num, most_points, fields_x, fields_y, heat_map_orig);
 end
 
 % find field spacing
@@ -520,15 +495,15 @@ field_distances=[];
 for i=1:fields_num
     field_dist=euc_d(centroid_x(center_field_idx),centroid_y(center_field_idx),centroid_x(i),centroid_y(i));
     if field_dist~=0 % check that the field is not compared to itself
-    if isempty(spac_exclud)==1 || isempty(find(spac_exclud==i))==1 % check index is not in exclusion list
-        if use_dist_thresh==1
-            if field_dist < dist_thresh % check that fields are close enough
+        if isempty(spac_exclud)==1 || isempty(find(spac_exclud==i))==1 % check index is not in exclusion list
+            if use_dist_thresh==1
+                if field_dist < dist_thresh % check that fields are close enough
+                    field_distances=[field_distances,field_dist];
+                end
+            else
                 field_distances=[field_distances,field_dist];
             end
-        else
-            field_distances=[field_distances,field_dist];
         end
-    end
     end
 end
 
@@ -538,6 +513,31 @@ for i=1:fields_num
     if isempty(size_exclud)==1 || isempty(find(size_exclud==i))==1 % check index is not in exclusion list
         field_sizes=[field_sizes,length(find(fields_x(i,:)>0))];
     end
+end
+
+% find firing intensity ratio within fields compared to outside of them
+if in_out_fields_ratio == 1
+    out_field_firing = [];
+    in_field_firing = [];
+    for x=1:size(heat_map_orig,2)
+        for y=1:size(heat_map_orig,1)
+            in_field_found = false;
+            for i=1:size(fields_x,1)
+                for j=1:length(fields_x(i,:))
+                    if x == fields_x(i,j) && y == fields_y(i,j) && isnan(heat_map_orig(y,x)) == 0
+                        in_field_firing = [in_field_firing, heat_map_orig(y,x)];
+                        in_field_found = true;
+                    end
+                end
+            end
+            if in_field_found == false && isnan(heat_map_orig(y,x)) == 0
+                out_field_firing = [out_field_firing, heat_map_orig(y,x)];
+            end
+        end
+    end
+    mean_in_field_firing = mean(in_field_firing);
+    mean_out_field_firing = mean(out_field_firing);
+    in_out_fields_ratio_value = mean_in_field_firing / mean_out_field_firing;
 end
 
 % find angles
@@ -587,6 +587,33 @@ for i=1:fields_num
     end
 end
 
+% alternative orientation reporting
+ori2_angles=orientation2(centroid_x, centroid_y, heat_map_orig, ang_exclud, fields_num);
+[gs_orientation, gs_orientations_std]=extract_grid_orientation(ori2_angles);
+
+% evaluate the firing rate per field
+if field_frs_std == 1
+    mean_frs = [];
+    for i=1:size(fields_x,1)
+        non_zero_indices = find(fields_x(i,:)~=0);
+        frs = [];
+        for j=1:length(non_zero_indices)
+            fr = heat_map_orig(fields_y(i,j),fields_x(i,j));
+            frs = [frs, fr];
+        end
+        mean_fr = mean(frs);
+        mean_frs = [mean_frs, mean_fr];
+    end
+    std_field_frs = std(mean_frs);
+end
+
+% grid score
+if report_gridscore == 1
+    m = [];
+    [HDgridScore,gridness3Score]=get_HDGridScore(m,m,m,heat_map);
+end
+
+% report metrics
 output_file = fopen(output_filename,'w');
 mean_field_sizes=sum(field_sizes)/size(field_sizes,2);
 %median_field_sizes=median(field_sizes);
@@ -632,6 +659,24 @@ output_string = sprintf("size_space_ratio,%.4f\n",size_space_ratio);
 fprintf(output_file,output_string);
 output_string = sprintf("Spacing and Size Ratio: %.2f\n",size_space_ratio);
 fprintf(output_string);
+if in_out_fields_ratio == 1
+    output_string = sprintf("Inside and outside field firing intensity ratio: %.2f\n",in_out_fields_ratio_value);
+    fprintf(output_string);
+    output_string = sprintf("in_out_ratio,%.4f\n",in_out_fields_ratio_value);
+    fprintf(output_file,output_string);
+end
+if field_frs_std == 1
+    output_string = sprintf("Standard deviation of mean firing rate between fields: %.2f\n",std_field_frs);
+    fprintf(output_string);
+    output_string = sprintf("std_field_frs,%.4f\n",std_field_frs);
+    fprintf(output_file,output_string);    
+end
+if report_gridscore == 1
+    output_string = sprintf("HD grid score: %.2f; Gridness3Score: %.2f\n",HDgridScore,gridness3Score);
+    fprintf(output_string);
+    output_string = sprintf("hd_grid_score,%.4f\ngridness_3_score,%.4f\n",HDgridScore,gridness3Score);
+    fprintf(output_file,output_string); 
+end
 %fprintf("Grid scale score: %.2f\n",mean_field_sizes*mean_field_dists);
 if print_angles 
     output_string = sprintf("Frequency of angles: ");
