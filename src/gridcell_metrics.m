@@ -11,7 +11,7 @@
     https://stackoverflow.com/questions/12801400/find-the-center-of-mass-of-points
 %}
 
-function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,advanced_detection,advanced_detection_maxdist,advanced_detection_ang_inc,com_centroids,in_out_fields_ratio,field_frs_std,spac_exclud,size_exclud,ang_exclud)
+function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,advanced_detection,advanced_detection_maxdist,advanced_detection_ang_inc,com_centroids,in_out_fields_ratio,field_frs_std,report_gridscore,spac_exclud,size_exclud,ang_exclud)
 
 px2cm = str2num(px2cm);
 nonfld_filt_perc = str2num(nonfld_filt_perc);
@@ -52,7 +52,7 @@ advanced_detection_ang_inc = str2num(advanced_detection_ang_inc); % angle to inc
 com_centroids = str2num(com_centroids); % use center of mass to find centroids
 in_out_fields_ratio = str2num(in_out_fields_ratio); % find ratio of firing intensity within fields compared to outside of them
 field_frs_std = str2num(field_frs_std); % report standard deviation of mean firing rates between fields
-report_gridscore = 1;
+report_gridscore = str2num(report_gridscore);
 spac_exclud = str2double(strsplit(spac_exclud,"|"));
 size_exclud = str2double(strsplit(size_exclud,"|"));
 ang_exclud = str2double(strsplit(ang_exclud,"|"));

@@ -43,6 +43,7 @@ advanced_detection_ang_inc, 2, angle to increment radar scan in advanced grid fi
 com_centroids, 1, use center of mass to find centroids
 in_out_fields_ratio, 1, find ratio of firing intensity within fields compared to outside of them
 field_frs_std, 1, report standard deviation of mean firing rates between fields
+report_gridscore, 1, report grid score metrics
 spac_exclud, "[]", grid feilds to exclude from field spacing statistics. format should be "1|2|3" that is delimited by "|". No exclusion should be described as "[]". 
 size_exclud, "[]", grid feilds to exclude from field sizes statistics
 ang_exclud, "[]", grid feilds to exclude from field angles statistics
