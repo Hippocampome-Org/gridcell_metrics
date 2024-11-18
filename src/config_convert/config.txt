@@ -6,8 +6,8 @@ load_plot_from_file, 1, load neural data plot from individual file (1 plot_filep
 plot_filepath, "smooth_rate_map/saved_results/rate_map.txt"
 use_binary_input, 0, select to use (1) or not (0) binary input files as opposed to text input files
 heat_map_selection, 31
-use_ac, 0, choose to use autocorrelogram (ac) (1) or standard rate map (0)
-convert_to_ac, 0, automatically convert rate map input into an autocorrelogram
+use_ac, 1, choose to use autocorrelogram (ac) (1) or standard rate map (0)
+convert_to_ac, 1, automatically convert rate map input into an autocorrelogram
 use_dist_thresh, 0
 dist_thresh, 500
 use_fld_sz_thresh, 0
@@ -42,8 +42,10 @@ advanced_detection_maxdist, 50, maximum advanced detection distance to test
 advanced_detection_ang_inc, 2, angle to increment radar scan in advanced grid field detection
 com_centroids, 1, use center of mass to find centroids
 in_out_fields_ratio, 1, find ratio of firing intensity within fields compared to outside of them
-field_frs_std, 1, report standard deviation of mean firing rates between fields
+cov_between_fields_reporting, 1, report standard deviation of mean firing rates between fields
 report_gridscore, 1, report grid score metrics
+report_orientation2, 1, report other orientation measurement
+min_orientation2, 15, minimum angle used in orientation2 measurement
 spac_exclud, "[]", grid feilds to exclude from field spacing statistics. format should be "1|2|3" that is delimited by "|". No exclusion should be described as "[]". 
 size_exclud, "[]", grid feilds to exclude from field sizes statistics
 ang_exclud, "[]", grid feilds to exclude from field angles statistics

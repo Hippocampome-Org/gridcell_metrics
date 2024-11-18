@@ -11,7 +11,7 @@
     https://stackoverflow.com/questions/12801400/find-the-center-of-mass-of-points
 %}
 
-function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,advanced_detection,advanced_detection_maxdist,advanced_detection_ang_inc,com_centroids,in_out_fields_ratio,field_frs_std,report_gridscore,spac_exclud,size_exclud,ang_exclud)
+function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,advanced_detection,advanced_detection_maxdist,advanced_detection_ang_inc,com_centroids,in_out_fields_ratio,cov_between_fields_reporting,report_gridscore,report_orientation2,min_orientation2,spac_exclud,size_exclud,ang_exclud)
 
 px2cm = str2num(px2cm);
 nonfld_filt_perc = str2num(nonfld_filt_perc);
@@ -51,8 +51,10 @@ advanced_detection_maxdist = str2num(advanced_detection_maxdist); % max distance
 advanced_detection_ang_inc = str2num(advanced_detection_ang_inc); % angle to increment
 com_centroids = str2num(com_centroids); % use center of mass to find centroids
 in_out_fields_ratio = str2num(in_out_fields_ratio); % find ratio of firing intensity within fields compared to outside of them
-field_frs_std = str2num(field_frs_std); % report standard deviation of mean firing rates between fields
+cov_between_fields_reporting = str2num(cov_between_fields_reporting); % report standard deviation of mean firing rates between fields
 report_gridscore = str2num(report_gridscore);
+report_orientation2 = str2num(report_orientation2);
+min_orientation2 = str2num(min_orientation2);
 spac_exclud = str2double(strsplit(spac_exclud,"|"));
 size_exclud = str2double(strsplit(size_exclud,"|"));
 ang_exclud = str2double(strsplit(ang_exclud,"|"));
@@ -588,12 +590,14 @@ for i=1:fields_num
 end
 
 % alternative orientation reporting
-ori2_angles=orientation2(centroid_x, centroid_y, heat_map_orig, ang_exclud, fields_num);
-[gs_orientation, gs_orientations_std]=extract_grid_orientation(ori2_angles);
+if report_orientation2 == 1
+    ori2_angles=orientation2(centroid_x, centroid_y, heat_map_orig, ang_exclud, fields_num, min_orientation2);
+    [gs_orientation, gs_orientations_std]=extract_grid_orientation(ori2_angles);
+end
 
 % evaluate the firing rate per field
-if field_frs_std == 1
-    mean_frs = [];
+if cov_between_fields_reporting == 1
+    cov_frs = [];
     for i=1:size(fields_x,1)
         non_zero_indices = find(fields_x(i,:)~=0);
         frs = [];
@@ -602,9 +606,10 @@ if field_frs_std == 1
             frs = [frs, fr];
         end
         mean_fr = mean(frs);
-        mean_frs = [mean_frs, mean_fr];
+        std_fr = std(frs);
+        cov_frs = [cov_frs, mean_fr/std_fr];
     end
-    std_field_frs = std(mean_frs);
+    cov_mean = mean(cov_frs);
 end
 
 % grid score
@@ -665,16 +670,22 @@ if in_out_fields_ratio == 1
     output_string = sprintf("in_out_ratio,%.4f\n",in_out_fields_ratio_value);
     fprintf(output_file,output_string);
 end
-if field_frs_std == 1
-    output_string = sprintf("Standard deviation of mean firing rate between fields: %.2f\n",std_field_frs);
+if cov_between_fields_reporting == 1
+    output_string = sprintf("Mean Coefficient of Variation Between Grid Fields: %.2f\n",cov_mean);
     fprintf(output_string);
-    output_string = sprintf("std_field_frs,%.4f\n",std_field_frs);
+    output_string = sprintf("cov_mean,%.4f\n",cov_mean);
     fprintf(output_file,output_string);    
 end
 if report_gridscore == 1
     output_string = sprintf("HD grid score: %.2f; Gridness3Score: %.2f\n",HDgridScore,gridness3Score);
     fprintf(output_string);
     output_string = sprintf("hd_grid_score,%.4f\ngridness_3_score,%.4f\n",HDgridScore,gridness3Score);
+    fprintf(output_file,output_string); 
+end
+if report_orientation2 == 1
+    output_string = sprintf("Orientation2 angle: %.2f; standard deviation of angles: %.2f\n",gs_orientation,gs_orientations_std);
+    fprintf(output_string);
+    output_string = sprintf("gs_orientation,%.4f\ngs_orientations_std,%.4f\n",gs_orientation,gs_orientations_std);
     fprintf(output_file,output_string); 
 end
 %fprintf("Grid scale score: %.2f\n",mean_field_sizes*mean_field_dists);
