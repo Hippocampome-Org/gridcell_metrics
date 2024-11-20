@@ -19,6 +19,7 @@ dbscan_min_pts, 1, db_scan parameter
 load_custom_rm, 0, load custom rate map saved from a file
 load_custom_ac, 0, load custom ac saved from a file
 only_center_seven, 1, filter out fields except for seven closest to the plot center
+only_center_seven_inout_excl, 1, filter out fields detected beyond the center seven in in_out_fields_ratio. Note: this does not use advanced detection to detect the fields outside the central seven. This option can only be used if only_center_seven is enabled.
 use_tophat_filter, 0, filter neural firing through a tophat filter. Note: this may not work correctly.
 use_centsurr_filter, 0, filter neural firing through a center-surround filter. Note: this may not work correctly.
 minimal_plotting_mode, 0, preset plotting window size configuration
@@ -43,7 +44,7 @@ advanced_detection_ang_inc, 2, angle to increment radar scan in advanced grid fi
 com_centroids, 1, use center of mass to find centroids
 in_out_fields_ratio, 1, find ratio of firing intensity within fields compared to outside of them
 cov_between_fields_reporting, 1, report standard deviation of mean firing rates between fields
-report_gridscore, 1, report grid score metrics
+report_gridscore, 0, report grid score metrics
 report_orientation2, 1, report other orientation measurement
 min_orientation2, 15, minimum angle used in orientation2 measurement
 spac_exclud, "[]", grid feilds to exclude from field spacing statistics. format should be "1|2|3" that is delimited by "|". No exclusion should be described as "[]". 

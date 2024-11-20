@@ -11,7 +11,7 @@
     https://stackoverflow.com/questions/12801400/find-the-center-of-mass-of-points
 %}
 
-function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,advanced_detection,advanced_detection_maxdist,advanced_detection_ang_inc,com_centroids,in_out_fields_ratio,cov_between_fields_reporting,report_gridscore,report_orientation2,min_orientation2,spac_exclud,size_exclud,ang_exclud)
+function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,only_center_seven_inout_excl,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,advanced_detection,advanced_detection_maxdist,advanced_detection_ang_inc,com_centroids,in_out_fields_ratio,cov_between_fields_reporting,report_gridscore,report_orientation2,min_orientation2,spac_exclud,size_exclud,ang_exclud)
 
 px2cm = str2num(px2cm);
 nonfld_filt_perc = str2num(nonfld_filt_perc);
@@ -31,6 +31,7 @@ dbscan_min_pts = str2num(dbscan_min_pts);
 load_custom_rm = str2num(load_custom_rm);
 load_custom_ac = str2num(load_custom_ac);
 only_center_seven = str2num(only_center_seven);
+only_center_seven_inout_excl = str2num(only_center_seven_inout_excl);
 use_tophat_filter = str2num(use_tophat_filter);
 use_centsurr_filter = str2num(use_centsurr_filter);
 minimal_plotting_mode = str2num(minimal_plotting_mode);
@@ -297,6 +298,27 @@ if only_center_seven
         fld_cnt = 7;
     end
     closest_seven=closest_seven(1:fld_cnt);
+    if only_center_seven_inout_excl == 1;
+        all_fields=linspace(1,fields_num,fields_num);
+        not_closest_seven=setdiff(all_fields,closest_seven);
+        not_closest_seven_x=[];
+        not_closest_seven_y=[];
+        for i=1:fields_num
+            non_closest_found = 0;
+            for j=1:length(not_closest_seven)
+                if i == not_closest_seven(j)
+                    non_closest_found = 1;
+                end
+            end
+            if non_closest_found == 1
+                not_closest_seven_x = [not_closest_seven_x, fields_x(i,:)];
+                not_closest_seven_y = [not_closest_seven_y, fields_y(i,:)];
+            end
+        end
+    end
+        %fields_x_orig=fields_x;
+        %fields_y_orig=fields_y;
+
     % closest_seven=closest_seven(1:7);
     % filter out unwanted fields
     % filter_out=(fields_num-7);
@@ -523,6 +545,7 @@ if in_out_fields_ratio == 1
     in_field_firing = [];
     for x=1:size(heat_map_orig,2)
         for y=1:size(heat_map_orig,1)
+            % standard within field search
             in_field_found = false;
             for i=1:size(fields_x,1)
                 for j=1:length(fields_x(i,:))
@@ -532,7 +555,17 @@ if in_out_fields_ratio == 1
                     end
                 end
             end
-            if in_field_found == false && isnan(heat_map_orig(y,x)) == 0
+            % field search excluding fields outside of central seven if that option is enabled
+            not_closest_seven_found = false;
+            if only_center_seven == 1 && only_center_seven_inout_excl == 1
+                for i=1:size(not_closest_seven_x,2)
+                    if x == not_closest_seven_x(i) && y == not_closest_seven_y(i) ...
+                        && isnan(heat_map_orig(y,x)) == 0
+                        not_closest_seven_found = true;
+                    end
+                end
+            end
+            if in_field_found == false && not_closest_seven_found == false && isnan(heat_map_orig(y,x)) == 0
                 out_field_firing = [out_field_firing, heat_map_orig(y,x)];
             end
         end
