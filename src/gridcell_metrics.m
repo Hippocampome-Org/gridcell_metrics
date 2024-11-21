@@ -9,9 +9,10 @@
     http://agamtyagi.blogspot.com/2013/02/matlab-code-for-famous-mexican-hat.html
     https://gamedev.stackexchange.com/questions/4467/comparing-angles-and-working-out-the-difference
     https://stackoverflow.com/questions/12801400/find-the-center-of-mass-of-points
+    https://www.mathworks.com/matlabcentral/answers/1664294-how-do-i-find-the-indices-of-nonzero-elements-for-a-matrix-of-logical-vectors
 %}
 
-function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,only_center_seven_inout_excl,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,advanced_detection,advanced_detection_maxdist,advanced_detection_ang_inc,com_centroids,in_out_fields_ratio,cov_between_fields_reporting,report_gridscore,report_orientation2,min_orientation2,spac_exclud,size_exclud,ang_exclud)
+function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,only_center_seven_inout_excl,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,advanced_detection,advanced_detection_maxdist,advanced_detection_ang_inc,com_centroids,in_out_fields_ratio,cov_between_fields_reporting,report_gridscore,report_orientation2,min_orientation2,report_centroid_positions,report_centroid_positions_python,spac_exclud,size_exclud,ang_exclud)
 
 px2cm = str2num(px2cm);
 nonfld_filt_perc = str2num(nonfld_filt_perc);
@@ -56,6 +57,9 @@ cov_between_fields_reporting = str2num(cov_between_fields_reporting); % report s
 report_gridscore = str2num(report_gridscore);
 report_orientation2 = str2num(report_orientation2);
 min_orientation2 = str2num(min_orientation2);
+min_orientation2 = (min_orientation2 * pi) / 180; % convert to radians
+report_centroid_positions = str2num(report_centroid_positions);
+report_centroid_positions_python = str2num(report_centroid_positions_python);
 spac_exclud = str2double(strsplit(spac_exclud,"|"));
 size_exclud = str2double(strsplit(size_exclud,"|"));
 ang_exclud = str2double(strsplit(ang_exclud,"|"));
@@ -624,7 +628,7 @@ end
 
 % alternative orientation reporting
 if report_orientation2 == 1
-    ori2_angles=orientation2(centroid_x, centroid_y, heat_map_orig, ang_exclud, fields_num, min_orientation2);
+    ori2_angles=orientation2(centroid_x, centroid_y, heat_map_orig, ang_exclud, fields_num, min_orientation2, center_field_idx);
     [gs_orientation, gs_orientations_std]=extract_grid_orientation(ori2_angles);
 end
 
@@ -720,6 +724,28 @@ if report_orientation2 == 1
     fprintf(output_string);
     output_string = sprintf("gs_orientation,%.4f\ngs_orientations_std,%.4f\n",gs_orientation,gs_orientations_std);
     fprintf(output_file,output_string); 
+end
+if report_centroid_positions == 1
+    for i=1:fields_num
+        output_string = sprintf("Field: %d; x: %.2f, y: %.2f\n",i,centroid_x(i),centroid_y(i));
+        fprintf(output_string);
+        output_string = sprintf("field_%d_x,%.2f\nfield_%d_y,%.2f\n",i,centroid_x(i),i,centroid_y(i));
+        fprintf(output_file,output_string); 
+    end
+end
+if report_centroid_positions_python == 1
+    output_string = sprintf("all_coords = np.array((");
+    fprintf(output_string);
+    for i=1:fields_num
+        if i ~= center_field_idx
+            output_string = sprintf("[%.2f,%.2f]",centroid_y(i),centroid_x(i));
+            fprintf(output_string);
+            if i ~= fields_num fprintf(","); end
+        end
+    end
+    fprintf("))\n");
+    output_string = sprintf("centre = np.array(([%.2f,%.2f]))\n",size(heat_map,1)/2,size(heat_map,2)/2);
+    fprintf(output_string);
 end
 %fprintf("Grid scale score: %.2f\n",mean_field_sizes*mean_field_dists);
 if print_angles 

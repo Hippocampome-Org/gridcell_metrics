@@ -27,8 +27,8 @@ function [gs_orientation, gs_orientations_std]=extract_grid_orientation(orientat
     end
 
     % Extract average and standard deviation
-    orientation     = mean(corr_orientations);
-    orientation_std = std(corr_orientations);
+    orientation     = nanmean(corr_orientations);
+    orientation_std = nanstd(corr_orientations);
 
     % Test / correct orientation 
     test_matrix = [abs(orientation-60); abs(orientation)];

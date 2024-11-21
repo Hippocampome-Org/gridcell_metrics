@@ -1,14 +1,14 @@
 metric,value
-mean_field_sizes,46.14
-mean_field_sizes_px2cm,64.89
-mean_field_dists,15.01
-mean_field_dists_px2cm,21.10
-minimum angle,16.05
+mean_field_sizes,51.86
+mean_field_sizes_px2cm,72.92
+mean_field_dists,14.69
+mean_field_dists_px2cm,20.65
+minimum angle,12.96
 matching_centroid_number,3
 grid_fields_reported,7
-grid_fields_filtered_out,16
-size_space_ratio,1.9575
-in_out_ratio,-3.0906
-cov_mean,2.9614
-gs_orientation,-8.5617
-gs_orientations_std,0.0000
+grid_fields_filtered_out,18
+size_space_ratio,1.8071
+in_out_ratio,-2.7146
+cov_mean,2.6919
+gs_orientation,15.7343
+gs_orientations_std,3.7650

@@ -16,7 +16,7 @@ function pair_diff = circ_dist2(X)
     % x = np.outer(np.exp(1j*X), np.ones(X.size)) # similar to meshgrid, but simpler to implement
     x = outer_product;
     % y = np.transpose(x)
-    y = x';
+    y = transpose(x);
     % return np.angle(x/y)
     pair_diff = angle(x./y);
 end
