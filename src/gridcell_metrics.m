@@ -12,7 +12,7 @@
     https://www.mathworks.com/matlabcentral/answers/1664294-how-do-i-find-the-indices-of-nonzero-elements-for-a-matrix-of-logical-vectors
 %}
 
-function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,only_center_seven_inout_excl,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,advanced_detection,advanced_detection_maxdist,advanced_detection_ang_inc,com_centroids,in_out_fields_ratio,cov_between_fields_reporting,report_gridscore,report_orientation2,min_orientation2,report_centroid_positions,report_centroid_positions_python,spac_exclud,size_exclud,ang_exclud)
+function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,only_center_seven_inout_excl,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,advanced_detection,advanced_detection_maxdist,advanced_detection_ang_inc,com_centroids,in_out_fields_ratio,cov_between_fields_reporting,report_gridscore,report_orientation2,min_orientation2,report_centroid_positions,report_centroid_positions_python,outlier_removal,outlier_allowance,spac_exclud,size_exclud,ang_exclud)
 
 px2cm = str2num(px2cm);
 nonfld_filt_perc = str2num(nonfld_filt_perc);
@@ -60,6 +60,8 @@ min_orientation2 = str2num(min_orientation2);
 min_orientation2 = (min_orientation2 * pi) / 180; % convert to radians
 report_centroid_positions = str2num(report_centroid_positions);
 report_centroid_positions_python = str2num(report_centroid_positions_python);
+outlier_removal = str2num(outlier_removal);
+outlier_allowance = str2num(outlier_allowance);
 spac_exclud = str2double(strsplit(spac_exclud,"|"));
 size_exclud = str2double(strsplit(size_exclud,"|"));
 ang_exclud = str2double(strsplit(ang_exclud,"|"));
@@ -394,6 +396,7 @@ if advanced_detection == 1
         yc = centroid_y(ci); % center y
         x_inside_temp = []; % x point inside boundary
         y_inside_temp = []; % y point inside boundary
+        inside_dist = []; % distance from centroid
         for a=0:advanced_detection_ang_inc:360
             x_prior = xc;
             y_prior = yc;
@@ -402,22 +405,61 @@ if advanced_detection == 1
                 [x_scan,y_scan]=find_ver_hor(a, h);
                 x_scan = round(x_scan + xc);
                 y_scan = round(y_scan + yc);
-                if x_scan > x_max x_scan = y_max; end
+                if x_scan > x_max x_scan = x_max; end
                 if y_scan > y_max y_scan = y_max; end
                 if x_scan < 1 x_scan = 1; end
                 if y_scan < 1 y_scan = 1; end
                 fr_scan = heat_map_nonfilt(y_scan,x_scan);
+                % check for a point where the activity level is below the threshold
                 if fr_scan < (centroid_fr * nonfld_filt_perc)
                     if boundary_found == false
                         x_inside_temp = [x_inside_temp,x_prior];
                         y_inside_temp = [y_inside_temp,y_prior];
+                        inside_dist = [inside_dist; euc_d(x_scan,y_scan,centroid_x(ci),centroid_y(ci))];
                         boundary_found = true;
                     end
                 end
+                % the reason the commented out code block below exists is that it was not 
+                % completed in implementation and therefore not enabled.
+                %
+                % check for a sufficient activity rate at a plot border
+                % if x_scan == x_max || x_scan == 1 || y_scan == y_max || y_scan == 1
+                %    if boundary_found == false 
+                %        if fr_scan >= (centroid_fr * nonfld_filt_perc)
+                %            x_inside_temp = [x_inside_temp,x_scan];
+                %            y_inside_temp = [y_inside_temp,y_scan];
+                %            boundary_found = true;
+                %        end
+                %    end
+                % end
                 x_prior = x_scan;
                 y_prior = y_scan;
             end
         end
+        % remove outlier points
+        x_inside_temp_od = [];
+        y_inside_temp_od = [];
+        if outlier_removal == 1
+            inside_dist_median = median(inside_dist); % medians of inside distance values
+            for pnt_i=1:length(x_inside_temp)
+                if inside_dist(pnt_i) > (inside_dist_median * (1+outlier_allowance)) || ...
+                   inside_dist(pnt_i) < (inside_dist_median * (1-outlier_allowance))
+                   new_x = centroid_x(ci) + ((x_inside_temp(pnt_i) - centroid_x(ci)) * outlier_allowance);
+                   new_y = centroid_y(ci) + ((y_inside_temp(pnt_i) - centroid_y(ci)) * outlier_allowance);
+                    if new_x > x_max new_x = x_max; end
+                    if new_y > y_max new_y = y_max; end
+                    if new_x < 1 new_x = 1; end
+                    if new_y < 1 new_y = 1; end
+                    x_inside_temp_od = [x_inside_temp_od; round(new_x)];
+                    y_inside_temp_od = [y_inside_temp_od; round(new_y)];
+                else
+                    x_inside_temp_od = [x_inside_temp_od; x_inside_temp(pnt_i)];
+                    y_inside_temp_od = [y_inside_temp_od; y_inside_temp(pnt_i)];
+                end
+            end
+        end
+        x_inside_temp = x_inside_temp_od;
+        y_inside_temp = y_inside_temp_od;
         % fill in field area based on borders
         % scan on y-axis
         y_boundary_max = max(y_inside_temp);
@@ -449,6 +491,8 @@ if advanced_detection == 1
                 y_inside = [y_inside, by];
             end
         end
+        %  x_inside_temp2 = x_inside_temp;
+        %  y_inside_temp2 = y_inside_temp;
         % remove duplicates
         x_inside_temp3 = [];
         y_inside_temp3 = [];
@@ -652,7 +696,7 @@ end
 % grid score
 if report_gridscore == 1
     m = [];
-    [HDgridScore,gridness3Score]=get_HDGridScore(m,m,m,heat_map);
+    [HDgridScore,gridness3Score]=get_HDGridScore(m,m,m,heat_map_orig);
 end
 
 % report metrics
