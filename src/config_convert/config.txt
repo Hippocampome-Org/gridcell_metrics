@@ -3,11 +3,11 @@ output_filename, "metric_results.csv"
 px2cm, 45/32, conversion of each pixel to a centimeter lenth in an environment
 nonfld_filt_perc, .31, non-filtered percentage threshold
 load_plot_from_file, 1, load neural data plot from individual file (1 plot_filepath) or instead pick a file from a numbered list (0 heat_maps_list or heat_maps_ac_list)
-plot_filepath, "heat_maps_real/n3.mat"
-use_binary_input, 1, select to use (1) or not (0) binary input files as opposed to text input files
+plot_filepath, "smooth_rate_map/saved_results/rate_map.txt"
+use_binary_input, 0, select to use (1) or not (0) binary input files as opposed to text input files
 heat_map_selection, 31
-use_ac, 0, choose to use autocorrelogram (ac) (1) or standard rate map (0)
-convert_to_ac, 0, automatically convert rate map input into an autocorrelogram
+use_ac, 1, choose to use autocorrelogram (ac) (1) or standard rate map (0)
+convert_to_ac, 1, automatically convert rate map input into an autocorrelogram
 use_dist_thresh, 0
 dist_thresh, 500
 use_fld_sz_thresh, 0
@@ -50,7 +50,7 @@ min_orientation2, 15, minimum angle used in orientation2 measurement
 report_centroid_positions, 0, output centroid positions
 report_centroid_positions_python, 0, output centroid positions in python format
 outlier_removal, 1, enable automatic removal of outlier points in fields
-outlier_allowance, 0.4, amount of outlier distance from median field radius to field boundaries to allow
+outlier_allowance, 0.25, amount of outlier distance from median field radius to field boundaries to allow
 spac_exclud, "[]", grid feilds to exclude from field spacing statistics. format should be "1|2|3" that is delimited by "|". No exclusion should be described as "[]". 
 size_exclud, "[]", grid feilds to exclude from field sizes statistics
 ang_exclud, "[]", grid feilds to exclude from field angles statistics
