@@ -12,7 +12,7 @@
     https://www.mathworks.com/matlabcentral/answers/1664294-how-do-i-find-the-indices-of-nonzero-elements-for-a-matrix-of-logical-vectors
 %}
 
-function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,only_center_seven_inout_excl,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,advanced_detection,advanced_detection_maxdist,advanced_detection_ang_inc,com_centroids,in_out_fields_ratio,cov_between_fields_reporting,report_gridscore,report_orientation2,min_orientation2,report_centroid_positions,report_centroid_positions_python,outlier_removal,outlier_allowance,spac_exclud,size_exclud,ang_exclud)
+function gridcell_metrics(output_filename,px2cm,nonfld_filt_perc,load_plot_from_file,plot_filepath,use_binary_input,heat_map_selection,use_ac,convert_to_ac,use_dist_thresh,dist_thresh,use_fld_sz_thresh,fld_sz_thresh,manual_field_exclud,load_px2cm_conv,dbscan_epsilon,dbscan_min_pts,load_custom_rm,load_custom_ac,only_center_seven,inout_excl,use_tophat_filter,use_centsurr_filter,minimal_plotting_mode,auto_export_plots,filename_sizes,filename_spacings,filename_rotations,plot_fields_detected,plot_orig_firing,plot_legend,print_angles,control_window_size,custom,custom2,custom3,custom4,sml_ang_cnt_fld,sml_ang_cent_num,advanced_detection,advanced_detection_maxdist,advanced_detection_ang_inc,com_centroids,in_out_fields_ratio,cov_between_fields_reporting,report_gridscore,report_orientation2,min_orientation2,report_centroid_positions,report_centroid_positions_python,outlier_removal,outlier_allowance,spac_exclud,size_exclud,ang_exclud)
 
 px2cm = str2num(px2cm);
 nonfld_filt_perc = str2num(nonfld_filt_perc);
@@ -32,7 +32,7 @@ dbscan_min_pts = str2num(dbscan_min_pts);
 load_custom_rm = str2num(load_custom_rm);
 load_custom_ac = str2num(load_custom_ac);
 only_center_seven = str2num(only_center_seven);
-only_center_seven_inout_excl = str2num(only_center_seven_inout_excl);
+inout_excl = str2num(inout_excl);
 use_tophat_filter = str2num(use_tophat_filter);
 use_centsurr_filter = str2num(use_centsurr_filter);
 minimal_plotting_mode = str2num(minimal_plotting_mode);
@@ -70,20 +70,6 @@ ang_exclud = str2double(strsplit(ang_exclud,"|"));
 disp("Please wait while results are being generated. This may take several minutes.")
 
 %% Load configuration settings %%
-%config;
-% config_filename = "config.txt";
-% spac_exclud = []; size_exclud = []; ang_exclud = []; % specify any fields to exclude from statistics
-% config_file = fopen(config_filename);
-% config_vars = textscan(config_file,'%s',3,'Delimiter','|');
-% config_data = textscan(config_file,'%s %s %s',37,'Delimiter',',');
-% fclose(config_file);
-% for i=1:length(config_data{1})
-%     var_name = string(config_data{1}(i));        
-%     var_data = string(config_data{2}(i));
-%     command = sprintf("%s = %s;",var_name,var_data);
-%     eval(command);
-% end
-%%%
 load("heat_maps_list.mat"); small=35; medium=36; large=37; % list of rate map plots. real cell file_number 15 = small, 23 = medium, 17 = large
 load("heat_maps_ac_list.mat"); % list of autocorrelogram plots
 if load_px2cm_conv==1 saved_px2cm_conv; end
@@ -272,19 +258,19 @@ if use_fld_sz_thresh==1
             end
         end
     end
-end
 
-keep_in=[];
-for i=1:fields_num
-    if isempty(find(filter_out==i))
-        keep_in=[keep_in,i];
+    keep_in=[];
+    for i=1:fields_num
+        if isempty(find(filter_out==i))
+            keep_in=[keep_in,i];
+        end
     end
+    fields_num=fields_num-size(filter_out,2);
+    fields_x2=fields_x(keep_in,:);
+    fields_y2=fields_y(keep_in,:);
+    fields_x=fields_x2;
+    fields_y=fields_y2;
 end
-fields_num=fields_num-size(filter_out,2);
-fields_x2=fields_x(keep_in,:);
-fields_y2=fields_y(keep_in,:);
-fields_x=fields_x2;
-fields_y=fields_y2;
 
 % find centroids
 [centroid_x, centroid_y]=find_centroids(com_centroids, fields_num, most_points, fields_x, fields_y, heat_map_orig);
@@ -304,7 +290,7 @@ if only_center_seven
         fld_cnt = 7;
     end
     closest_seven=closest_seven(1:fld_cnt);
-    if only_center_seven_inout_excl == 1;
+    if inout_excl == 1;
         all_fields=linspace(1,fields_num,fields_num);
         not_closest_seven=setdiff(all_fields,closest_seven);
         not_closest_seven_x=[];
@@ -437,9 +423,9 @@ if advanced_detection == 1
             end
         end
         % remove outlier points
-        x_inside_temp_od = [];
-        y_inside_temp_od = [];
         if outlier_removal == 1
+            x_inside_temp_od = [];
+            y_inside_temp_od = [];
             inside_dist_median = median(inside_dist); % medians of inside distance values
             for pnt_i=1:length(x_inside_temp)
                 if inside_dist(pnt_i) > (inside_dist_median * (1+outlier_allowance)) || ...
@@ -457,9 +443,9 @@ if advanced_detection == 1
                     y_inside_temp_od = [y_inside_temp_od; y_inside_temp(pnt_i)];
                 end
             end
+            x_inside_temp = x_inside_temp_od;
+            y_inside_temp = y_inside_temp_od;
         end
-        x_inside_temp = x_inside_temp_od;
-        y_inside_temp = y_inside_temp_od;
         % fill in field area based on borders
         % scan on y-axis
         y_boundary_max = max(y_inside_temp);
@@ -605,7 +591,7 @@ if in_out_fields_ratio == 1
             end
             % field search excluding fields outside of central seven if that option is enabled
             not_closest_seven_found = false;
-            if only_center_seven == 1 && only_center_seven_inout_excl == 1
+            if only_center_seven == 1 && inout_excl == 1
                 for i=1:size(not_closest_seven_x,2)
                     if x == not_closest_seven_x(i) && y == not_closest_seven_y(i) ...
                         && isnan(heat_map_orig(y,x)) == 0
@@ -726,19 +712,22 @@ if only_center_seven && fld_cnt~=7
 end
 output_string = sprintf("grid_fields_reported,%d\n",fields_num);
 fprintf(output_file,output_string); 
-output_string = sprintf("Grid fields reported: %d; ",fields_num);
+output_string = sprintf("Grid fields reported: %d\n",fields_num);
 fprintf(output_string);
-if only_center_seven
-    output_string = sprintf("grid_fields_filtered_out,%d\n",filter_out);
-    fprintf(output_file,output_string); 
-    output_string = sprintf("Grid fields filtered out: %d\n",filter_out);
-    fprintf(output_string);
-else
-    output_string = sprintf("grid_fields_filtered_out,%d\n",size(filter_out,2));
-    fprintf(output_file,output_string); 
-    output_string = sprintf("Grid fields filtered out: %d\n",size(filter_out,2));
-    fprintf(output_string);
-end
+% The code for grid_fields_filtered_out is commented out below because it
+% is unclear if it reports this statistic correctly. Further testing is
+% needed.
+% if only_center_seven
+%     output_string = sprintf("grid_fields_filtered_out,%d\n",filter_out);
+%     fprintf(output_file,output_string); 
+%     output_string = sprintf("Grid fields filtered out: %d\n",filter_out);
+%     fprintf(output_string);
+% else
+%     output_string = sprintf("grid_fields_filtered_out,%d\n",size(filter_out,2));
+%     fprintf(output_file,output_string); 
+%     output_string = sprintf("Grid fields filtered out: %d\n",size(filter_out,2));
+%     fprintf(output_string);
+% end
 %size_space_ratio=(mean_field_dists/((mean_field_sizes/3.14)^0.5)/2);
 size_space_ratio=(mean_field_dists/(((mean_field_sizes/3.14)^0.5)*2));
 output_string = sprintf("size_space_ratio,%.4f\n",size_space_ratio);
@@ -764,7 +753,7 @@ if report_gridscore == 1
     fprintf(output_file,output_string); 
 end
 if report_orientation2 == 1
-    output_string = sprintf("Orientation2 angle: %.2f; standard deviation of angles: %.2f\n",gs_orientation,gs_orientations_std);
+    output_string = sprintf("Orientation angle (Opexebo methods): %.2f\nStandard deviation of angles (Opexebo methods): %.2f\n",gs_orientation,gs_orientations_std);
     fprintf(output_string);
     output_string = sprintf("gs_orientation,%.4f\ngs_orientations_std,%.4f\n",gs_orientation,gs_orientations_std);
     fprintf(output_file,output_string); 
@@ -810,24 +799,7 @@ if print_angles
     end
     fprintf("\n");
 end
-%{
-fprintf("Centroids: ");
-for i=1:length(centroid_x)
-    fprintf("(%.2f,%.2f) ",centroid_x(i),centroid_y(i));
-end
-fprintf("\nAngles from first centroid: ");
-for i=1:(length(centroid_x)-1)
-    fprintf("%.2f",cent_one_angles(i));
-    if i ~= (length(centroid_x)-1) fprintf(", "); end
-end
-%}
-%{
-fprintf("\nCustom angle reporting: ");
-c1=1; c2=7;
-a=find_angle(centroid_x(c1),centroid_y(c1),centroid_x(c2),centroid_y(c2));
-fprintf("centroid %d to %d: %.2f",c1,c2,a);
-%}
-%fprintf("\n");
+
 fclose(output_file);
 
 % save scores
