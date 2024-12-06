@@ -8,6 +8,7 @@
     https://www.mathworks.com/matlabcentral/answers/629408-how-to-use-convolution-on-a-2d-matrix-with-a-kernel
     http://agamtyagi.blogspot.com/2013/02/matlab-code-for-famous-mexican-hat.html
     https://gamedev.stackexchange.com/questions/4467/comparing-angles-and-working-out-the-difference
+    https://www.mathopenref.com/arctan.html
     https://stackoverflow.com/questions/12801400/find-the-center-of-mass-of-points
     https://www.mathworks.com/matlabcentral/answers/1664294-how-do-i-find-the-indices-of-nonzero-elements-for-a-matrix-of-logical-vectors
 %}
@@ -702,7 +703,7 @@ output_string = sprintf("Mean field distances: %.2f; mean distance in cm: %.2f c
 fprintf(output_string);
 %fprintf("Median field distances: %.2f\n",median_field_dists);
 %fprintf("Minimum angle: %.2f\n",min(angles));
-output_string = sprintf("minimum angle,%.2f\nmatching_centroid_number,%d\n",sml_ang_cnt_fld,sml_ang_cent_num);
+output_string = sprintf("minimum_angle,%.2f\nmatching_centroid_number,%d\n",sml_ang_cnt_fld,sml_ang_cent_num);
 fprintf(output_file,output_string);
 output_string = sprintf("Minimum angle: %.2f; Matching centroid number: %d\n",sml_ang_cnt_fld,sml_ang_cent_num);
 fprintf(output_string);
