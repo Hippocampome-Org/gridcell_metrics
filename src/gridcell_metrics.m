@@ -362,7 +362,6 @@ end
 
 % advanced and localized detection of fields
 if advanced_detection == 1
-    test=[];
     centroid_fr = []; % centroid firing rates
     fields_x = [];
     fields_y = [];
@@ -371,54 +370,33 @@ if advanced_detection == 1
         centroid_fr = [centroid_fr,heat_map_nonfilt(round(centroid_y(i)),round(centroid_x(i)))];
         %fprintf("x: %d; y: %d; r: %f\n",round(centroid_x(i)),round(centroid_y(i)),centroid_fr(i));
     end
-    % detect boundary area of fields. scan 360 degrees at 5 degree increments. check firing rate
-    % starting at center in degree direction using 1 pixel x and y increments. furthest distance
-    % is set to advanced_detection_maxdist
+    % radar scan. detect boundary area of fields. scan 360 degrees at 5 degree increments. check 
+    % firing rate/correlation starting at center in degree direction using 1 pixel x and y increments. 
+    % furthest distance is set to advanced_detection_maxdist
     x_inside = []; % x point inside boundary
     y_inside = []; % y point inside boundary
     y_max = size(heat_map_nonfilt,1);
     x_max = size(heat_map_nonfilt,2);
     for ci=1:size(centroid_x,2)
-        xc = centroid_x(ci); % center x
-        yc = centroid_y(ci); % center y
-        x_inside_temp = []; % x point inside boundary
-        y_inside_temp = []; % y point inside boundary
+        x_inside_temp = []; y_inside_temp = []; % x and y points inside boundary
         inside_dist = []; % distance from centroid
         for a=0:advanced_detection_ang_inc:360
-            x_prior = xc;
-            y_prior = yc;
+            x_prior = centroid_x(ci); y_prior = centroid_y(ci);
             boundary_found = false;
             for h=0:advanced_detection_maxdist
                 [x_scan,y_scan]=find_ver_hor(a, h);
-                x_scan = round(x_scan + xc);
-                y_scan = round(y_scan + yc);
+                x_scan = round(x_scan + centroid_x(ci));
+                y_scan = round(y_scan + centroid_y(ci));
                 if x_scan > x_max x_scan = x_max; end
                 if y_scan > y_max y_scan = y_max; end
                 if x_scan < 1 x_scan = 1; end
                 if y_scan < 1 y_scan = 1; end
-                fr_scan = heat_map_nonfilt(y_scan,x_scan);
-                % check for a point where the activity level is below the threshold
-                if fr_scan < (centroid_fr * nonfld_filt_perc)
-                    if boundary_found == false
-                        x_inside_temp = [x_inside_temp,x_prior];
-                        y_inside_temp = [y_inside_temp,y_prior];
-                        inside_dist = [inside_dist; euc_d(x_scan,y_scan,centroid_x(ci),centroid_y(ci))];
-                        boundary_found = true;
-                    end
+                if heat_map_nonfilt(y_scan,x_scan) < (centroid_fr(ci) * nonfld_filt_perc) && boundary_found == false % check for a point where the activity level is below the threshold
+                    x_inside_temp = [x_inside_temp,x_prior];
+                    y_inside_temp = [y_inside_temp,y_prior];
+                    inside_dist = [inside_dist; euc_d(x_scan,y_scan,centroid_x(ci),centroid_y(ci))];
+                    boundary_found = true;
                 end
-                % the reason the commented out code block below exists is that it was not 
-                % completed in implementation and therefore not enabled.
-                %
-                % check for a sufficient activity rate at a plot border
-                % if x_scan == x_max || x_scan == 1 || y_scan == y_max || y_scan == 1
-                %    if boundary_found == false 
-                %        if fr_scan >= (centroid_fr * nonfld_filt_perc)
-                %            x_inside_temp = [x_inside_temp,x_scan];
-                %            y_inside_temp = [y_inside_temp,y_scan];
-                %            boundary_found = true;
-                %        end
-                %    end
-                % end
                 x_prior = x_scan;
                 y_prior = y_scan;
             end
@@ -506,9 +484,6 @@ if advanced_detection == 1
         for ii=1:length(x_inside_temp3)
             fields_x(ci,ii) = x_inside_temp3(ii);
             fields_y(ci,ii) = y_inside_temp3(ii);
-            if ci == 1
-                test = [test; x_inside_temp3(ii),y_inside_temp3(ii)];
-            end
         end
     end
 
@@ -810,47 +785,47 @@ if exist('save_field_size','var')
         % fprintf(fieldsize_file,"%f\n",mean_field_sizes);
         if only_center_seven==1
             if fld_cnt==7
-	            fprintf(fieldsize_file,"%f\n",mean_field_sizes);
+                fprintf(fieldsize_file,"%f\n",mean_field_sizes);
             else
                 fprintf(fieldsize_file,"%f\n",-1); % incorrect number of fields detected
             end
         else
             fprintf(fieldsize_file,"%f\n",mean_field_sizes);
         end
-	    fclose(fieldsize_file);
+        fclose(fieldsize_file);
     end
 end
 if exist('save_field_spacing','var')
     if str2num([string(save_field_spacing)]) == 1
         fieldspacing_file = fopen(filename_spacings,'at'); % append file
-	    % fprintf(fieldspacing_file,"%f\n",mean_field_dists);
+        % fprintf(fieldspacing_file,"%f\n",mean_field_dists);
         if only_center_seven==1
             if fld_cnt==7
-	            fprintf(fieldspacing_file,"%f\n",mean_field_dists);
+                fprintf(fieldspacing_file,"%f\n",mean_field_dists);
             else
                 fprintf(fieldspacing_file,"%f\n",-1); % incorrect number of fields detected
             end
         else
             fprintf(fieldspacing_file,"%f\n",mean_field_dists);
         end
-	    fclose(fieldspacing_file);
+        fclose(fieldspacing_file);
     end
 end
 if exist('save_field_rotation','var')
     if str2num([string(save_field_rotation)]) == 1
         fieldrotation_file = fopen(filename_rotations,'at'); % append file
-	    % fprintf(fieldrotation_file,"%f\n",min(angles));
+        % fprintf(fieldrotation_file,"%f\n",min(angles));
         % fprintf(fieldrotation_file,"%f\n",sml_ang_cnt_fld);
         if only_center_seven==1
             if fld_cnt==7
-	            fprintf(fieldrotation_file,"%f\n",sml_ang_cnt_fld);
+                fprintf(fieldrotation_file,"%f\n",sml_ang_cnt_fld);
             else
                 fprintf(fieldrotation_file,"%f\n",-1); % incorrect number of fields detected
             end
         else
             fprintf(fieldrotation_file,"%f\n",sml_ang_cnt_fld);
         end
-	    fclose(fieldrotation_file);
+        fclose(fieldrotation_file);
     end
 end
 

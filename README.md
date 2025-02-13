@@ -1,5 +1,7 @@
 # Gridcell Metrics Reporting
 
+Current version: 1.0.1
+
 ## Related article
 <br>Some additional details and analyses run with this software can be found in this article.
 <br>\[1\] R. G., R., Ascoli, G. A., Sutton, N. M., & Dannenberg, H. (2024). Spatial periodicity in grid cell firing is explained by a neural sequence code of 2-D trajectories. eLife, 13. [https://doi.org/10.7554/eLife.96627.1](https://doi.org/10.7554/eLife.96627.1)
