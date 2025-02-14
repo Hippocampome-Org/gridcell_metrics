@@ -1,0 +1,5 @@
+Version 1.0.1 released 02/13/25
+
+This version includes a patch that corrects the radar scan field border code. Specifically, this added comparing the firing rate/correlation value to the centroid-specific value for that during the scan. The code had a bug where all centroid values were being compared to determine if a point below the non-field filtering threshold was found. In practice, in some cases, this has been observed to cause the fields detected to be a smaller size relative to the non-field filtering threshold. The effect this patch creates is each field appears to have its radar scan field boundary detection more localized to the firing rate/correlation value of the centroid of that field.
+
+The suggested default non-field filtering threshold remains as 0.31 (31%). Testing has found that threshold performs better than values below that in terms of field detection. This is based on testing with the 30 animal-recorded cells used in (Sutton et al, 2024). The results of this testing can be viewed at https://hco-dev-docs.readthedocs.io/en/latest/gridcell_metrics/performance_tests.html
