@@ -1,6 +1,6 @@
 # Gridcell Metrics Reporting
 
-Current version: 1.0.2
+Current version: 1.0.3
 
 ## Related article
 <br>Some additional details and analyses run with this software can be found in this article.
