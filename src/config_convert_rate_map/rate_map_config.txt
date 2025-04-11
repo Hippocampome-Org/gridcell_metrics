@@ -3,6 +3,11 @@ spikes_file, "input_data/spikes.csv"
 output_file, "saved_results/rate_map.txt"
 Xs_file, "input_data/pos_x.csv"
 Ys_file, "input_data/pos_y.csv"
+spikes_binary_filepath, "input_data/spk_MEC_LII_Stellate.dat"
+oat_location, "offline_analysis_toolbox"
+use_binary_spikes, 0
+spk_bin_size, 10, spike reader bin size. Note: small bin sizes may take long processing with large spike sets. 40min sim with bin size 1 can take 10min to create plot.
+sel_nrn, 506, neuron selected to analyze
 occupancy_norm, 1, perform occupancy normalization. this adjusts rates by number of visits to locations.
 omit_islands, 1, see later comments
 omit_noocc, 1, set no occupancy to zero

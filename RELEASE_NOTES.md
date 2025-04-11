@@ -6,6 +6,10 @@ The suggested default non-field filtering threshold remains as 0.31 (31%). Testi
 
 The performance testing earlier mentioned does not score field sizes detected relative to fields found in animal recordings because that is considered too subjective. For example, at what point specifically in each field is a firing rate/correlation value too small to be considered outside the field? This software approximates this by using methods such as the non-field filtering threshold. This approach of not including that in performance measurements is akin to that approach used in (R. G. et al., 2024). Subjectively, this patch reducing the detected field size (in some cases) relative to the non-field filtering threshold, and still recommending the same non-field filtering threshold as a default value, could in theory mean that the results using that threshold are somewhat less accurate. However, subjectively, this patch appears to only have created a limited effect on field size detection overall. It was decided that implementing the algorithm correctly, as intended, is predicted to create better results overall as compared to the non-patched version. Therefore this patch is included in the main software code even with this effect on detection.
 
+Version 1.0.2 Created 04/10/25
+
+The ability to import CARLsim binary spike files into config_convert_rate_map was added. This makes it faster to run simulation results with this GridMet software. This option is enabled by setting use_binary_spikes to 1 in rate_map_config.txt.
+
 References:
 <br>Rebecca, R. G., Ascoli, G. A., Sutton, N. M., & Dannenberg, H. (2024). Spatial periodicity in grid cell firing is explained by a neural sequence code of 2-D trajectories. eLife, 13.
 

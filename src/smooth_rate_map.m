@@ -1,4 +1,4 @@
-function smooth_rate_map(spikes_file, output_file, Xs_file, Ys_file, occupancy_norm, omit_islands, omit_noocc, binside, std_smooth_kernel, plot_subsect, grid_size, plot_size, plot_spikes, fs_video, timestep, use_smoothing, show_plot, save_file)
+function smooth_rate_map(spikes_file, output_file, Xs_file, Ys_file, spikes_binary_filepath, oat_location, use_binary_spikes, spk_bin_size, sel_nrn, occupancy_norm, omit_islands, omit_noocc, binside, std_smooth_kernel, plot_subsect, grid_size, plot_size, plot_spikes, fs_video, timestep, use_smoothing, show_plot, save_file)
 % spikes = readmatrix("input_data/spikes.csv");
 % output_file = "saved_results/rate_map.txt";
 % x = readmatrix("/media/nmsutton/StorageDrive/comp_neuro/gmu/research/ach_sim/data/neuron_23/highres_pos_x.csv");
@@ -18,9 +18,14 @@ function smooth_rate_map(spikes_file, output_file, Xs_file, Ys_file, occupancy_n
 % show_plot=0;
 % save_file=1;
 disp("Please wait while results are being generated. This may take several minutes.");
+if use_binary_spikes == 1
+	convert_carlsim_spikes(oat_location, x_positions_filepath, y_positions_filepath, ...
+		                   spikes_binary_filepath, spikes_output_filepath, spk_bin_size, sel_nrn);
+end
 spikes = readmatrix(spikes_file);
 x = readmatrix(Xs_file);
 y = readmatrix(Ys_file);
+use_binary_spikes = str2num(use_binary_spikes);
 occupancy_norm = str2num(occupancy_norm);
 omit_islands = str2num(omit_islands);
 omit_noocc = str2num(omit_noocc);
@@ -35,6 +40,12 @@ timestep = str2num(timestep);
 use_smoothing = str2num(use_smoothing);
 show_plot = str2num(show_plot);
 save_file = str2num(save_file);
+
+% convert binary to csv format
+if use_binary_spikes == 1
+	convert_carlsim_spikes(oat_location, Xs_file, Ys_file, spikes_binary_filepath, ...
+						   spikes_file, spk_bin_size, sel_nrn);
+end
 
 spikes_x = spikes(1:end,3);
 spikes_y = spikes(1:end,2);

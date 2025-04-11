@@ -70,3 +70,35 @@ The CircStat code comes with the following disclaimer and distribution license:
 All functions in this toolbox were implemented with care and tested on the examples presented in 'Biostatistical Analysis' were possible. Nevertheless, they may contain errors or bugs, which may affect the outcome of your analysis. We do not take responsibility for any harm coming from using this toolbox, neither if it is caused by errors in the software nor if it is caused by its improper application. Please email us any bugs you find.
 
 Distributed under Open Source BSD License
+
+Some files were redistibuted here and modified in some cases from the CARLsim software written by the Krichmar group at University of California at Irvine. That software can be found at: https://github.com/UCI-CARL/CARLsim4/tree/master/tools/offline_analysis_toolbox. The latest version of CARLsim as of April 2025 is located at https://github.com/UCI-CARL/CARLsim6.
+
+Those files are the ones in the offline_analysis_toolbox directory.
+
+These files are copyright 2016 Cognitive Anteater Robotics Laboratory @ University of Calfornia, Irvine
+
+They have the following license:
+
+The MIT License (MIT)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+This work is described in the article:
+
+Chou, T. S., Kashyap, H. J., Xing, J., Listopad, S., Rounds, E. L., Beyeler, M., Dutt, N., & Krichmar, J. L. (2018, July). CARLsim 4: An open source library for large scale, biologically detailed spiking neural network simulation using heterogeneous clusters. In 2018 International joint conference on neural networks (IJCNN) (pp. 1-8). IEEE.
