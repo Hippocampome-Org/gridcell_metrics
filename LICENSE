@@ -71,13 +71,13 @@ All functions in this toolbox were implemented with care and tested on the examp
 
 Distributed under Open Source BSD License
 
-Some files were redistibuted here and modified in some cases from the CARLsim software written by the Krichmar group at University of California at Irvine. That software can be found at: https://github.com/UCI-CARL/CARLsim4/tree/master/tools/offline_analysis_toolbox. The latest version of CARLsim as of April 2025 is located at https://github.com/UCI-CARL/CARLsim6.
+A file is redistibuted here from the CARLsim software written by the Krichmar group at University of California at Irvine. That software can be found at: https://github.com/UCI-CARL/CARLsim4/tree/master/tools/offline_analysis_toolbox. The latest version of CARLsim as of April 2025 is located at https://github.com/UCI-CARL/CARLsim6.
 
-Those files are the ones in the offline_analysis_toolbox directory.
+This file is SpikeReader.m.
 
-These files are copyright 2016 Cognitive Anteater Robotics Laboratory @ University of Calfornia, Irvine
+This file is copyright 2016 Cognitive Anteater Robotics Laboratory @ University of Calfornia, Irvine
 
-They have the following license:
+This file has the following license:
 
 The MIT License (MIT)
 
